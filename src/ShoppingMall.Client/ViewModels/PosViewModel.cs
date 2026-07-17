@@ -27,6 +27,7 @@ public class PosViewModel : BaseViewModel
     public decimal DiscountTotal => _cart.DiscountTotal;
     public decimal TaxTotal => _cart.TaxTotal;
     public decimal GrandTotal => _cart.GrandTotal;
+    public decimal TotalAmount => GrandTotal;
 
     private string _barcodeInput = "";
     public string BarcodeInput
@@ -81,6 +82,55 @@ public class PosViewModel : BaseViewModel
         set => SetProperty(ref _isLoading, value);
     }
 
+    private string _couponCode = "";
+    public string CouponCode
+    {
+        get => _couponCode;
+        set => SetProperty(ref _couponCode, value);
+    }
+
+    private string _couponStatus = "";
+    public string CouponStatus
+    {
+        get => _couponStatus;
+        set => SetProperty(ref _couponStatus, value);
+    }
+
+    private string? _loyaltyPhone;
+    public string? LoyaltyPhone
+    {
+        get => _loyaltyPhone;
+        set => SetProperty(ref _loyaltyPhone, value);
+    }
+
+    private string _loyaltyInfo = "";
+    public string LoyaltyInfo
+    {
+        get => _loyaltyInfo;
+        set => SetProperty(ref _loyaltyInfo, value);
+    }
+
+    private bool _isPromotionLoading;
+    public bool IsPromotionLoading
+    {
+        get => _isPromotionLoading;
+        set => SetProperty(ref _isPromotionLoading, value);
+    }
+
+    private string _promotionInfo = "";
+    public string PromotionInfo
+    {
+        get => _promotionInfo;
+        set => SetProperty(ref _promotionInfo, value);
+    }
+
+    private decimal _promotionDiscount;
+    public decimal PromotionDiscount
+    {
+        get => _promotionDiscount;
+        set => SetProperty(ref _promotionDiscount, value);
+    }
+
     public string[] PaymentMethods { get; } = ["Cash", "Card", "UPI", "Wallet", "GiftCard", "StoreCredit"];
 
     public ICommand NewTransactionCommand { get; }
@@ -94,6 +144,8 @@ public class PosViewModel : BaseViewModel
     public ICommand SuspendCommand { get; }
     public ICommand RecallCommand { get; }
     public ICommand ReprintCommand { get; }
+    public ICommand ApplyCouponCommand { get; }
+    public ICommand LookupLoyaltyCommand { get; }
 
     public PosViewModel(ApiClient api, AppConfiguration config, CartService cart, ThermalPrinterService printer, Offline.OfflineCache offline)
     {
@@ -113,10 +165,12 @@ public class PosViewModel : BaseViewModel
         RemoveItemCommand = new RelayCommand(item => _cart.RemoveItem((CartLineItem)item!));
         ApplyDiscountCommand = new RelayCommand(async _ => await ShowDiscountDialogAsync());
         PayCommand = new RelayCommand(async _ => await ProcessPaymentAsync());
-        QuickAmountCommand = new RelayCommand(amount => TenderedAmount = (decimal)amount);
+        QuickAmountCommand = new RelayCommand(amount => { if (amount is decimal d) TenderedAmount = d; });
         SuspendCommand = new RelayCommand(async _ => await SuspendTransactionAsync());
         RecallCommand = new RelayCommand(async _ => await RecallTransactionAsync());
         ReprintCommand = new RelayCommand(async _ => await ReprintLastReceiptAsync());
+        ApplyCouponCommand = new RelayCommand(async _ => await ApplyCouponAsync());
+        LookupLoyaltyCommand = new RelayCommand(async _ => await LookupLoyaltyAsync());
     }
 
     public async Task CreateNewTransactionAsync()
@@ -129,7 +183,9 @@ public class PosViewModel : BaseViewModel
             CurrentTransaction = await _api.CreateTransactionAsync(cfg.StoreId, cfg.TerminalId, null);
             _cart.Clear();
             RefreshTotals();
-            StatusText = $"Transaction #{CurrentTransaction.ReceiptNumber}";
+            if (CurrentTransaction != null)
+                StatusText = $"Transaction #{CurrentTransaction.ReceiptNumber}";
+            await LoadActivePromotionsAsync();
         }
         catch (Exception ex)
         {
@@ -137,6 +193,28 @@ public class PosViewModel : BaseViewModel
             IsOffline = true;
         }
         finally { IsLoading = false; }
+    }
+
+    private async Task LoadActivePromotionsAsync()
+    {
+        IsPromotionLoading = true;
+        try
+        {
+            var promotions = await _api.GetActivePromotionsAsync();
+            if (promotions != null && promotions.Count > 0)
+            {
+                PromotionInfo = $"{promotions.Count} promotion(s) active";
+            }
+            else
+            {
+                PromotionInfo = "";
+            }
+        }
+        catch
+        {
+            PromotionInfo = "";
+        }
+        finally { IsPromotionLoading = false; }
     }
 
     private async Task LookupBarcodeAsync(string input)
@@ -182,7 +260,7 @@ public class PosViewModel : BaseViewModel
             {
                 if (CurrentTransaction != null)
                 {
-                _offline.QueueTransactionAsync(System.Text.Json.JsonSerializer.Serialize(new
+                _ = _offline.QueueTransactionAsync(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     Type = "AddLineItem",
                     TransactionId = CurrentTransaction.Id,
@@ -217,6 +295,63 @@ public class PosViewModel : BaseViewModel
         await Task.CompletedTask;
     }
 
+    private async Task ApplyCouponAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CouponCode))
+        {
+            CouponStatus = "Enter a coupon code";
+            return;
+        }
+
+        CouponStatus = "Validating...";
+        try
+        {
+            var result = await _api.HttpPostAsync<CouponValidationResult>(
+                "/api/promotions/coupons/validate",
+                new { Code = CouponCode, CartTotal = GrandTotal });
+
+            if (result != null && result.IsValid)
+            {
+                CouponStatus = $"Coupon applied: {result.CampaignName}";
+            }
+            else
+            {
+                CouponStatus = result?.Error ?? "Invalid coupon";
+            }
+        }
+        catch
+        {
+            CouponStatus = "Validation failed";
+        }
+    }
+
+    private async Task LookupLoyaltyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(LoyaltyPhone))
+        {
+            LoyaltyInfo = "Enter phone number";
+            return;
+        }
+
+        LoyaltyInfo = "Searching...";
+        try
+        {
+            var result = await _api.LookupLoyaltyAsync(LoyaltyPhone);
+            if (result != null)
+            {
+                LoyaltyInfo = $"{result.CustomerName} | Tier: {result.Tier} | Points: {result.PointsBalance} (₹{result.RedeemableValue})";
+            }
+            else
+            {
+                LoyaltyInfo = "Customer not found";
+            }
+        }
+        catch
+        {
+            LoyaltyInfo = "Lookup failed";
+        }
+    }
+
     private async Task ProcessPaymentAsync()
     {
         if (CurrentTransaction == null || !_cart.HasItems)
@@ -238,7 +373,7 @@ public class PosViewModel : BaseViewModel
             }
             catch
             {
-                _offline.QueueTransactionAsync(System.Text.Json.JsonSerializer.Serialize(new
+                _ = _offline.QueueTransactionAsync(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     Type = "Payment",
                     TransactionId = CurrentTransaction.Id,
@@ -269,6 +404,10 @@ public class PosViewModel : BaseViewModel
             var txn = CurrentTransaction;
             CurrentTransaction = null;
             _cart.Clear();
+            CouponCode = "";
+            CouponStatus = "";
+            PromotionInfo = "";
+            PromotionDiscount = 0;
             RefreshTotals();
             StatusText = $"₹{txn.GrandTotal:N2} Paid. Change: ₹{ChangeAmount:F2}";
         }
@@ -304,6 +443,10 @@ public class PosViewModel : BaseViewModel
 
         CurrentTransaction = null;
         _cart.Clear();
+        CouponCode = "";
+        CouponStatus = "";
+        PromotionInfo = "";
+        PromotionDiscount = 0;
         RefreshTotals();
         StatusText = "Transaction suspended";
     }
@@ -367,6 +510,7 @@ public class PosViewModel : BaseViewModel
         OnPropertyChanged(nameof(DiscountTotal));
         OnPropertyChanged(nameof(TaxTotal));
         OnPropertyChanged(nameof(GrandTotal));
+        OnPropertyChanged(nameof(TotalAmount));
         OnPropertyChanged(nameof(CartItems));
     }
 }

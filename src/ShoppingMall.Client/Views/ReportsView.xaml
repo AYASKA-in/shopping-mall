@@ -1,0 +1,251 @@
+<UserControl x:Class="ShoppingMall.Client.Views.ReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#1A56DB" Padding="10" CornerRadius="5">
+            <TextBlock Text="Reports" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Sales" Command="{Binding SelectSalesTabCommand}"
+                    Background="{Binding IsSalesTab, Converter={StaticResource BoolToVis}, ConverterParameter=Tab}" 
+                    Padding="15,8" Margin="0,0,5,0"/>
+            <Button Grid.Column="1" Content="Products" Command="{Binding SelectProductsTabCommand}"
+                    Padding="15,8" Margin="0,0,5,0"/>
+            <Button Grid.Column="2" Content="GST" Command="{Binding SelectGstTabCommand}"
+                    Padding="15,8" Margin="0,0,5,0"/>
+            <Button Grid.Column="3" Content="Cashier" Command="{Binding SelectCashierTabCommand}"
+                    Padding="15,8" Margin="0,0,5,0"/>
+
+            <DatePicker Grid.Column="4" SelectedDate="{Binding FromDate}" Width="120" Margin="20,0,5,0"/>
+            <DatePicker Grid.Column="5" SelectedDate="{Binding ToDate}" Width="120" Margin="0,0,10,0"/>
+
+            <Button Grid.Column="6" Content="Refresh" Command="{Binding RefreshCommand}"
+                    Background="#059669" Foreground="White" Padding="15,8" BorderThickness="0"/>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid Visibility="{Binding IsSalesTab, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#EFF6FF" Padding="15" Margin="0,0,5,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Total Sales" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding TotalSales, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#1A56DB"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="#F0FDF4" Padding="15" Margin="5,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Transactions" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding TotalTransactions}" FontSize="24" FontWeight="Bold" Foreground="#059669"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Background="#FEF2F2" Padding="15" Margin="5,0,0,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Total Tax" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding TotalTax, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#DC2626"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,0,5,5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="By Terminal" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding TerminalSales}" Margin="0,5,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Terminal" Width="150" DisplayMemberBinding="{Binding TerminalName}"/>
+                                <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                                <GridViewColumn Header="Sales" Width="120" DisplayMemberBinding="{Binding TotalSales, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Tax" Width="100" DisplayMemberBinding="{Binding TotalTax, StringFormat=₹{0:N2}}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+
+                <Grid Grid.Row="2" Margin="0,5,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="By Cashier" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding CashierSales}" Margin="0,5,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Cashier" Width="150" DisplayMemberBinding="{Binding CashierName}"/>
+                                <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                                <GridViewColumn Header="Sales" Width="120" DisplayMemberBinding="{Binding TotalSales, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Voids" Width="80" DisplayMemberBinding="{Binding TotalVoids}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </Grid>
+
+            <Grid Visibility="{Binding IsProductsTab, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Top Sellers" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding TopSellers}" Margin="0,5,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Product" Width="200" DisplayMemberBinding="{Binding ProductName}"/>
+                                <GridViewColumn Header="Qty Sold" Width="80" DisplayMemberBinding="{Binding TotalQuantity}"/>
+                                <GridViewColumn Header="Sales" Width="120" DisplayMemberBinding="{Binding TotalSales, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,5,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="By Category" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding CategorySales}" Margin="0,5,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Category" Width="200" DisplayMemberBinding="{Binding CategoryName}"/>
+                                <GridViewColumn Header="Qty Sold" Width="80" DisplayMemberBinding="{Binding TotalQuantity}"/>
+                                <GridViewColumn Header="Sales" Width="120" DisplayMemberBinding="{Binding TotalSales, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </Grid>
+
+            <Grid Visibility="{Binding IsGstTab, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#F0FDF4" Padding="15" Margin="0,0,5,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="CGST" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding CGST, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#059669"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="#EFF6FF" Padding="15" Margin="5,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="SGST" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding SGST, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#1A56DB"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Background="#FEF2F2" Padding="15" Margin="5,0,0,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="IGST" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding IGST, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#DC2626"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Tax Rate Slabs" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding GstSlabs}" Margin="0,5,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Type" Width="80" DisplayMemberBinding="{Binding TaxType}"/>
+                                <GridViewColumn Header="Rate" Width="80" DisplayMemberBinding="{Binding TaxRate, StringFormat={}{0}%}"/>
+                                <GridViewColumn Header="Taxable Amount" Width="130" DisplayMemberBinding="{Binding TotalTaxableAmount, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Tax Amount" Width="120" DisplayMemberBinding="{Binding TotalTaxAmount, StringFormat=₹{0:N2}}"/>
+                                <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </Grid>
+
+            <Grid Visibility="{Binding IsCashierTab, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#EFF6FF" Padding="15" Margin="0,0,5,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Total Sales" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding TotalSales, StringFormat=₹{0:N2}}" FontSize="24" FontWeight="Bold" Foreground="#1A56DB"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="#F0FDF4" Padding="15" Margin="5,0,0,0" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Transactions" FontSize="12" Foreground="#6B7280"/>
+                            <TextBlock Text="{Binding TotalTransactions}" FontSize="24" FontWeight="Bold" Foreground="#059669"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <TextBlock Grid.Row="1" Text="Cashier Performance" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                <ListView Grid.Row="2" ItemsSource="{Binding CashierSales}" Margin="0,5,0,0">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Cashier" Width="150" DisplayMemberBinding="{Binding CashierName}"/>
+                            <GridViewColumn Header="Transactions" Width="100" DisplayMemberBinding="{Binding TransactionCount}"/>
+                            <GridViewColumn Header="Sales" Width="120" DisplayMemberBinding="{Binding TotalSales, StringFormat=₹{0:N2}}"/>
+                            <GridViewColumn Header="Voids" Width="80" DisplayMemberBinding="{Binding TotalVoids}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </Grid>
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusText}" Foreground="#6B7280" Margin="0,10,0,0"/>
+    </Grid>
+</UserControl>

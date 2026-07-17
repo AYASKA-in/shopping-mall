@@ -59,5 +59,7 @@ app.MapReportEndpoints();
 app.MapSyncEndpoints();
 app.MapAdminEndpoints();
 app.MapCustomerEndpoints();
+app.MapPromotionEndpoints();
+app.MapLoyaltyEndpoints();
 
 app.Run();

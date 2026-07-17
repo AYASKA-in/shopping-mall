@@ -8,15 +8,20 @@ public class LoyaltyService
     private readonly IRepository<LoyaltyAccount> _accountRepo;
     private readonly IRepository<LoyaltyTransaction> _txnRepo;
     private readonly IRepository<TierConfig> _tierRepo;
+    private readonly IRepository<Customer> _customerRepo;
+    private const int PointsPerRupee = 1;
+    private const int RedeemRate = 100;
 
     public LoyaltyService(
         IRepository<LoyaltyAccount> accountRepo,
         IRepository<LoyaltyTransaction> txnRepo,
-        IRepository<TierConfig> tierRepo)
+        IRepository<TierConfig> tierRepo,
+        IRepository<Customer> customerRepo)
     {
         _accountRepo = accountRepo;
         _txnRepo = txnRepo;
         _tierRepo = tierRepo;
+        _customerRepo = customerRepo;
     }
 
     public async Task<LoyaltyAccount> GetOrCreateAccountAsync(Guid customerId)
@@ -101,6 +106,16 @@ public class LoyaltyService
         await _accountRepo.UpdateAsync(account);
 
         return txn;
+    }
+
+    public decimal ConvertPointsToCurrency(int points)
+    {
+        return Math.Round((decimal)points / RedeemRate, 2);
+    }
+
+    public int ConvertCurrencyToPoints(decimal amount)
+    {
+        return (int)Math.Floor(amount);
     }
 
     private async Task<decimal> GetTierMultiplierAsync(Core.Enums.LoyaltyTier tier)

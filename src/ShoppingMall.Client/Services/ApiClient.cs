@@ -112,6 +112,36 @@ public class ApiClient
         catch { return null; }
     }
 
+    public async Task<List<TerminalSales>?> GetSalesByTerminalAsync(Guid storeId, DateTime from, DateTime to)
+    {
+        try { return await _http.GetFromJsonAsync<List<TerminalSales>>($"/api/reports/sales/{storeId}/by-terminal?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}"); }
+        catch { return null; }
+    }
+
+    public async Task<List<CashierSales>?> GetSalesByCashierAsync(Guid storeId, DateTime from, DateTime to)
+    {
+        try { return await _http.GetFromJsonAsync<List<CashierSales>>($"/api/reports/sales/{storeId}/by-cashier?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}"); }
+        catch { return null; }
+    }
+
+    public async Task<List<ProductPerformance>?> GetTopSellersAsync(Guid storeId, DateTime from, DateTime to, int count = 20)
+    {
+        try { return await _http.GetFromJsonAsync<List<ProductPerformance>>($"/api/reports/products/{storeId}/top-sellers?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&count={count}"); }
+        catch { return null; }
+    }
+
+    public async Task<List<CategorySales>?> GetSalesByCategoryAsync(Guid storeId, DateTime from, DateTime to)
+    {
+        try { return await _http.GetFromJsonAsync<List<CategorySales>>($"/api/reports/products/{storeId}/by-category?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}"); }
+        catch { return null; }
+    }
+
+    public async Task<GstSummary?> GetGstSummaryAsync(Guid storeId, DateTime from, DateTime to)
+    {
+        try { return await _http.GetFromJsonAsync<GstSummary>($"/api/reports/gst/{storeId}/summary?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}"); }
+        catch { return null; }
+    }
+
     // Suspend / Recall
     public async Task SuspendTransactionAsync(Guid transactionId, string basketData, decimal basketTotal, int itemCount)
     {
@@ -136,6 +166,20 @@ public class ApiClient
             return await _http.GetFromJsonAsync<List<Transaction>>($"/api/pos/transactions/store/{storeId}/today") ?? new();
         }
         catch { return new(); }
+    }
+
+    // Promotions
+    public async Task<List<Promotion>?> GetActivePromotionsAsync()
+    {
+        try { return await _http.GetFromJsonAsync<List<Promotion>>("/api/promotions/active"); }
+        catch { return null; }
+    }
+
+    // Loyalty
+    public async Task<LoyaltyLookupResult?> LookupLoyaltyAsync(string phone)
+    {
+        try { return await _http.GetFromJsonAsync<LoyaltyLookupResult>($"/api/loyalty/lookup/{phone}"); }
+        catch { return null; }
     }
 
     // Generic helpers
@@ -163,3 +207,11 @@ public record DashboardData(TodayData Today, AlertData Alerts);
 public record TodayData(decimal Sales, int Transactions, decimal Tax, decimal Discounts);
 public record AlertData(int LowStockCount, List<LowStockItem> LowStockItems);
 public record LowStockItem(Guid ProductId, decimal Available);
+public record LoyaltyLookupResult(Guid CustomerId, string CustomerName, string? Phone, string? CardNumber, int PointsBalance, int LifetimePoints, string Tier, decimal RedeemableValue);
+public record CouponValidationResult(bool IsValid, string? Error, string? CampaignName, Guid? PromotionId);
+public record TerminalSales(Guid TerminalId, string TerminalName, int TransactionCount, decimal TotalSales, decimal TotalTax);
+public record CashierSales(Guid UserId, string CashierName, int TransactionCount, decimal TotalSales, int TotalVoids);
+public record ProductPerformance(Guid ProductId, string ProductName, decimal TotalQuantity, decimal TotalSales, int TransactionCount);
+public record CategorySales(Guid CategoryId, string CategoryName, decimal TotalQuantity, decimal TotalSales, int TransactionCount);
+public record GstSlab(string TaxType, decimal TaxRate, decimal TotalTaxableAmount, decimal TotalTaxAmount, int TransactionCount);
+public record GstSummary(decimal CGST, decimal SGST, decimal IGST, decimal TotalGST, List<GstSlab> Slabs);

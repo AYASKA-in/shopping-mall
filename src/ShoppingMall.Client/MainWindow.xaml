@@ -59,6 +59,8 @@
         <views:SupplierListView Grid.Row="1" DataContext="{Binding SupplierListVM}"
                                 Visibility="{Binding IsSupplierListView, Converter={StaticResource BoolToVis}}"/>
         <views:CustomerView Grid.Row="1" DataContext="{Binding CustomerVM}"
-                            Visibility="{Binding IsCustomerView, Converter={StaticResource BoolToVis}}"/>
+                             Visibility="{Binding IsCustomerView, Converter={StaticResource BoolToVis}}"/>
+        <views:ReportsView Grid.Row="1" DataContext="{Binding ReportsVM}"
+                           Visibility="{Binding IsReportsView, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </Window>
