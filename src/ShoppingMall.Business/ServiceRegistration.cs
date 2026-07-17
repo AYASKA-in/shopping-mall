@@ -18,6 +18,10 @@ public static class ServiceRegistration
         services.AddScoped<BarcodeService>();
         services.AddScoped<ProductBulkImportService>();
         services.AddScoped<PurchaseOrderService>();
+        services.AddScoped<PdfExportService>();
+        services.AddScoped<ExcelExportService>();
+        services.AddScoped<InterStoreTransferService>();
+        services.AddScoped<UpiPaymentService>();
 
         services.AddValidatorsFromAssemblyContaining<TransactionValidator>();
 

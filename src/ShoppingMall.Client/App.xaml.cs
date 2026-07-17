@@ -34,12 +34,14 @@ public partial class App : Application
         services.AddTransient<SupplierListViewModel>();
         services.AddTransient<CustomerViewModel>();
         services.AddTransient<ReportsViewModel>();
+        services.AddTransient<AdminViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<MainWindow>();
         services.AddTransient<Views.ProductListView>();
         services.AddTransient<Views.SupplierListView>();
         services.AddTransient<Views.CustomerView>();
         services.AddTransient<Views.ReportsView>();
+        services.AddTransient<Views.AdminView>();
 
         Services = services.BuildServiceProvider();
     }

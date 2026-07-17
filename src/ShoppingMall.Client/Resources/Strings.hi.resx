@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>शॉपिंग मॉल POS</value></data>
+  <data name="POS" xml:space="preserve"><value>बिक्री केंद्र</value></data>
+  <data name="NewSale" xml:space="preserve"><value>नई बिक्री</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>बारकोड स्कैन करें</value></data>
+  <data name="Coupon" xml:space="preserve"><value>कूपन</value></data>
+  <data name="Apply" xml:space="preserve"><value>लागू करें</value></data>
+  <data name="Loyalty" xml:space="preserve"><value>लॉयल्टी</value></data>
+  <data name="Lookup" xml:space="preserve"><value>खोजें</value></data>
+  <data name="Tendered" xml:space="preserve"><value>दी गई राशि</value></data>
+  <data name="Change" xml:space="preserve"><value>वापसी राशि</value></data>
+  <data name="Total" xml:space="preserve"><value>कुल</value></data>
+  <data name="Discount" xml:space="preserve"><value>छूट</value></data>
+  <data name="Tax" xml:space="preserve"><value>कर</value></data>
+  <data name="Suspend" xml:space="preserve"><value>रोकें</value></data>
+  <data name="PayCash" xml:space="preserve"><value>नकद भुगतान</value></data>
+  <data name="Receipt" xml:space="preserve"><value>रसीद</value></data>
+  <data name="QuickActions" xml:space="preserve"><value>त्वरित कार्रवाई</value></data>
+  <data name="Reports" xml:space="preserve"><value>रिपोर्ट्स</value></data>
+  <data name="Admin" xml:space="preserve"><value>प्रशासन</value></data>
+  <data name="Products" xml:space="preserve"><value>उत्पाद</value></data>
+  <data name="Suppliers" xml:space="preserve"><value>आपूर्तिकर्ता</value></data>
+  <data name="Customers" xml:space="preserve"><value>ग्राहक</value></data>
+  <data name="Inventory" xml:space="preserve"><value>इन्वेंटरी</value></data>
+  <data name="Logout" xml:space="preserve"><value>लॉग आउट</value></data>
+  <data name="Ready" xml:space="preserve"><value>तैयार</value></data>
+  <data name="Search" xml:space="preserve"><value>खोजें</value></data>
+  <data name="Print" xml:space="preserve"><value>प्रिंट करें</value></data>
+  <data name="Save" xml:space="preserve"><value>सहेजें</value></data>
+  <data name="Cancel" xml:space="preserve"><value>रद्द करें</value></data>
+  <data name="Confirm" xml:space="preserve"><value>पुष्टि करें</value></data>
+</root>

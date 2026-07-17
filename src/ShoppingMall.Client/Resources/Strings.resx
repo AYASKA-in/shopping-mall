@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Shopping Mall POS</value></data>
+  <data name="POS" xml:space="preserve"><value>POS</value></data>
+  <data name="NewSale" xml:space="preserve"><value>New Sale</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Scan Barcode</value></data>
+  <data name="Coupon" xml:space="preserve"><value>Coupon</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Loyalty" xml:space="preserve"><value>Loyalty</value></data>
+  <data name="Lookup" xml:space="preserve"><value>Lookup</value></data>
+  <data name="Tendered" xml:space="preserve"><value>Tendered</value></data>
+  <data name="Change" xml:space="preserve"><value>Change</value></data>
+  <data name="Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Discount" xml:space="preserve"><value>Discount</value></data>
+  <data name="Tax" xml:space="preserve"><value>Tax</value></data>
+  <data name="Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="PayCash" xml:space="preserve"><value>Pay Cash</value></data>
+  <data name="Receipt" xml:space="preserve"><value>Receipt</value></data>
+  <data name="QuickActions" xml:space="preserve"><value>Quick Actions</value></data>
+  <data name="Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="Admin" xml:space="preserve"><value>Admin</value></data>
+  <data name="Products" xml:space="preserve"><value>Products</value></data>
+  <data name="Suppliers" xml:space="preserve"><value>Suppliers</value></data>
+  <data name="Customers" xml:space="preserve"><value>Customers</value></data>
+  <data name="Inventory" xml:space="preserve"><value>Inventory</value></data>
+  <data name="Logout" xml:space="preserve"><value>Logout</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Print" xml:space="preserve"><value>Print</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+</root>

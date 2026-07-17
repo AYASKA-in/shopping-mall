@@ -55,6 +55,7 @@ public class MainViewModel : BaseViewModel
     public SupplierListViewModel SupplierListVM { get; }
     public CustomerViewModel CustomerVM { get; }
     public ReportsViewModel ReportsVM { get; }
+    public AdminViewModel AdminVM { get; }
 
     public ICommand NavigateToPosCommand { get; }
     public ICommand NavigateToInventoryCommand { get; }
@@ -67,7 +68,7 @@ public class MainViewModel : BaseViewModel
 
     public MainViewModel(ApiClient api, AppConfiguration config, PosViewModel posVM,
         ProductListViewModel productListVM, SupplierListViewModel supplierListVM,
-        CustomerViewModel customerVM, ReportsViewModel reportsVM)
+        CustomerViewModel customerVM, ReportsViewModel reportsVM, AdminViewModel adminVM)
     {
         _api = api;
         _config = config;
@@ -76,6 +77,7 @@ public class MainViewModel : BaseViewModel
         SupplierListVM = supplierListVM;
         CustomerVM = customerVM;
         ReportsVM = reportsVM;
+        AdminVM = adminVM;
 
         NavigateToPosCommand = new RelayCommand(_ => CurrentView = AppView.Pos);
         NavigateToInventoryCommand = new RelayCommand(_ => CurrentView = AppView.Inventory);

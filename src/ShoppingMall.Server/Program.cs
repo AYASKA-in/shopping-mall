@@ -2,6 +2,7 @@ using ShoppingMall.Data;
 using ShoppingMall.Data.DbContext;
 using ShoppingMall.Data.Seed;
 using ShoppingMall.Business;
+using ShoppingMall.Business.Services;
 using ShoppingMall.Server.Endpoints;
 using ShoppingMall.Server.Middleware;
 using ShoppingMall.Server.BackgroundServices;
@@ -17,6 +18,7 @@ builder.Host.UseWindowsService(options =>
 builder.Services.AddDataLayer(builder.Configuration);
 builder.Services.AddBusinessLayer();
 builder.Services.AddHostedService<CloudSyncService>();
+builder.Services.AddScoped<CloudBackupService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -61,5 +63,7 @@ app.MapAdminEndpoints();
 app.MapCustomerEndpoints();
 app.MapPromotionEndpoints();
 app.MapLoyaltyEndpoints();
+app.MapTransferEndpoints();
+app.MapUpiEndpoints();
 
 app.Run();

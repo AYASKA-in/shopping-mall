@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ShoppingMall.Business.Services;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Data.DbContext;
 using SyncLog = ShoppingMall.Core.Models.SyncLog;
@@ -30,17 +31,25 @@ public class CloudSyncService : BackgroundService
         var intervalMinutes = _configuration.GetValue<int>("CloudSync:BackupIntervalMinutes");
         if (intervalMinutes <= 0) intervalMinutes = 15;
 
-        _logger.LogInformation("Cloud sync service started (interval: {Interval} min)", intervalMinutes);
+        var autoBackup = _configuration.GetValue<bool>("CloudSync:AutoBackup");
+
+        _logger.LogInformation("Cloud sync service started (interval: {Interval} min, auto-backup: {Auto})",
+            intervalMinutes, autoBackup);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await ProcessSyncQueueAsync(stoppingToken);
+
+                if (autoBackup)
+                {
+                    await PerformAutoBackupAsync(stoppingToken);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing sync queue");
+                _logger.LogError(ex, "Error in sync cycle");
             }
 
             await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
@@ -56,10 +65,9 @@ public class CloudSyncService : BackgroundService
 
         var pendingItems = await syncRepo.FindAsync(q => q.Status == Core.Enums.SyncStatus.Pending);
         var itemsList = pendingItems.ToList();
-
         if (itemsList.Count == 0) return;
 
-        var log = new Core.Models.SyncLog
+        var log = new SyncLog
         {
             Id = Guid.NewGuid(),
             Direction = Core.Enums.SyncDirection.Upload,
@@ -96,5 +104,27 @@ public class CloudSyncService : BackgroundService
         await syncLogRepo.UpdateAsync(log);
 
         _logger.LogInformation("Sync completed: {Success} success, {Failed} failed", success, failed);
+    }
+
+    private async Task PerformAutoBackupAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ShoppingMallDbContext>();
+            var backupService = scope.ServiceProvider.GetRequiredService<CloudBackupService>();
+
+            var stores = await context.Stores.Where(s => s.IsActive).ToListAsync(ct);
+            foreach (var store in stores)
+            {
+                if (ct.IsCancellationRequested) break;
+                await backupService.CreateBackupAsync(store.Id);
+                _logger.LogInformation("Auto-backup completed for store {Store}", store.Name);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Auto-backup failed");
+        }
     }
 }

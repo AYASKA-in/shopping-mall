@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using ShoppingMall.Business.Services;
 using ShoppingMall.Data.DbContext;
+using ShoppingMall.Core.Enums;
 
 namespace ShoppingMall.Server.Endpoints;
 
@@ -218,6 +220,154 @@ public static class ReportEndpoints
                     LowStockItems = lowStock.Select(s => new { s.ProductId, s.Available })
                 }
             });
+        });
+
+        group.MapGet("/export/sales/{storeId}/pdf", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, PdfExportService pdf) =>
+        {
+            var txns = await db.Transactions
+                .Where(t => t.StoreId == storeId && t.Status == TransactionStatus.Completed
+                    && t.CreatedAt >= from && t.CreatedAt <= to)
+                .OrderBy(t => t.CreatedAt)
+                .ToListAsync();
+
+            var store = await db.Stores.FindAsync(storeId);
+            var users = await db.Users.Where(u => u.IsActive).ToDictionaryAsync(u => u.Id, u => u.DisplayName);
+            var rows = txns.Select(t => new SalesReportRow(
+                t.ReceiptNumber,
+                t.UserId.HasValue && users.TryGetValue(t.UserId.Value, out var n) ? n : "Unknown",
+                t.GrandTotal,
+                t.CreatedAt
+            ));
+
+            var pdfBytes = pdf.GenerateSalesReport(rows, from, to, store?.Name ?? "Store");
+            return Results.File(pdfBytes, "application/pdf", $"sales_report_{from:yyyyMMdd}_{to:yyyyMMdd}.pdf");
+        });
+
+        group.MapGet("/export/sales/{storeId}/excel", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, ExcelExportService excel) =>
+        {
+            var txns = await db.Transactions
+                .Where(t => t.StoreId == storeId && t.Status == TransactionStatus.Completed
+                    && t.CreatedAt >= from && t.CreatedAt <= to)
+                .OrderBy(t => t.CreatedAt)
+                .ToListAsync();
+
+            var store = await db.Stores.FindAsync(storeId);
+            var users = await db.Users.Where(u => u.IsActive).ToDictionaryAsync(u => u.Id, u => u.DisplayName);
+            var rows = txns.Select(t => new SalesReportRow(
+                t.ReceiptNumber,
+                t.UserId.HasValue && users.TryGetValue(t.UserId.Value, out var n) ? n : "Unknown",
+                t.GrandTotal,
+                t.CreatedAt
+            ));
+
+            var excelBytes = excel.GenerateSalesReport(rows, from, to, store?.Name ?? "Store");
+            return Results.File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"sales_report_{from:yyyyMMdd}_{to:yyyyMMdd}.xlsx");
+        });
+
+        group.MapGet("/export/gst/{storeId}/pdf", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, PdfExportService pdf) =>
+        {
+            var store = await db.Stores.FindAsync(storeId);
+            var data = await db.TaxBreakdowns
+                .Where(tb => tb.Transaction.StoreId == storeId
+                    && tb.Transaction.Status == TransactionStatus.Completed
+                    && tb.Transaction.CreatedAt >= from && tb.Transaction.CreatedAt <= to)
+                .GroupBy(tb => new { tb.TaxType, tb.TaxRate })
+                .Select(g => new
+                {
+                    g.Key.TaxType,
+                    g.Key.TaxRate,
+                    TotalTaxable = g.Sum(tb => tb.TaxableAmount),
+                    TotalTax = g.Sum(tb => tb.TaxAmount),
+                    TxnCount = g.Select(tb => tb.TransactionId).Distinct().Count()
+                })
+                .ToListAsync();
+
+            var slabs = data.Select(d => new GstReportRow(
+                d.TaxType.ToString(), d.TaxRate, d.TotalTaxable, d.TotalTax, d.TxnCount
+            ));
+            var cgst = data.Where(d => d.TaxType == TaxType.CGST).Sum(d => d.TotalTax);
+            var sgst = data.Where(d => d.TaxType == TaxType.SGST).Sum(d => d.TotalTax);
+            var igst = data.Where(d => d.TaxType == TaxType.IGST).Sum(d => d.TotalTax);
+            var total = cgst + sgst + igst;
+
+            var pdfBytes = pdf.GenerateGstReport(slabs, from, to, store?.Name ?? "Store", cgst, sgst, igst, total);
+            return Results.File(pdfBytes, "application/pdf", $"gst_report_{from:yyyyMMdd}_{to:yyyyMMdd}.pdf");
+        });
+
+        group.MapGet("/export/gst/{storeId}/excel", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, ExcelExportService excel) =>
+        {
+            var store = await db.Stores.FindAsync(storeId);
+            var data = await db.TaxBreakdowns
+                .Where(tb => tb.Transaction.StoreId == storeId
+                    && tb.Transaction.Status == TransactionStatus.Completed
+                    && tb.Transaction.CreatedAt >= from && tb.Transaction.CreatedAt <= to)
+                .GroupBy(tb => new { tb.TaxType, tb.TaxRate })
+                .Select(g => new
+                {
+                    g.Key.TaxType,
+                    g.Key.TaxRate,
+                    TotalTaxable = g.Sum(tb => tb.TaxableAmount),
+                    TotalTax = g.Sum(tb => tb.TaxAmount),
+                    TxnCount = g.Select(tb => tb.TransactionId).Distinct().Count()
+                })
+                .ToListAsync();
+
+            var slabs = data.Select(d => new GstReportRow(
+                d.TaxType.ToString(), d.TaxRate, d.TotalTaxable, d.TotalTax, d.TxnCount
+            ));
+            var cgst = data.Where(d => d.TaxType == TaxType.CGST).Sum(d => d.TotalTax);
+            var sgst = data.Where(d => d.TaxType == TaxType.SGST).Sum(d => d.TotalTax);
+            var igst = data.Where(d => d.TaxType == TaxType.IGST).Sum(d => d.TotalTax);
+            var total = cgst + sgst + igst;
+
+            var excelBytes = excel.GenerateGstReport(slabs, from, to, store?.Name ?? "Store", cgst, sgst, igst, total);
+            return Results.File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"gst_report_{from:yyyyMMdd}_{to:yyyyMMdd}.xlsx");
+        });
+
+        group.MapGet("/export/products/{storeId}/pdf", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, PdfExportService pdf) =>
+        {
+            var store = await db.Stores.FindAsync(storeId);
+            var data = await db.TransactionLines
+                .Where(l => l.Transaction.StoreId == storeId
+                    && l.Transaction.Status == TransactionStatus.Completed
+                    && l.Transaction.CreatedAt >= from && l.Transaction.CreatedAt <= to)
+                .GroupBy(l => l.ProductName)
+                .Select(g => new
+                {
+                    ProductName = g.Key,
+                    Quantity = g.Sum(l => l.Quantity),
+                    Sales = g.Sum(l => l.NetAmount),
+                    TxnCount = g.Select(l => l.TransactionId).Distinct().Count()
+                })
+                .OrderByDescending(x => x.Sales)
+                .ToListAsync();
+
+            var rows = data.Select(d => new ProductReportRow(d.ProductName, d.Quantity, d.Sales, d.TxnCount));
+            var pdfBytes = pdf.GenerateProductReport(rows, from, to, store?.Name ?? "Store");
+            return Results.File(pdfBytes, "application/pdf", $"product_report_{from:yyyyMMdd}_{to:yyyyMMdd}.pdf");
+        });
+
+        group.MapGet("/export/products/{storeId}/excel", async (Guid storeId, DateTime from, DateTime to, ShoppingMallDbContext db, ExcelExportService excel) =>
+        {
+            var store = await db.Stores.FindAsync(storeId);
+            var data = await db.TransactionLines
+                .Where(l => l.Transaction.StoreId == storeId
+                    && l.Transaction.Status == TransactionStatus.Completed
+                    && l.Transaction.CreatedAt >= from && l.Transaction.CreatedAt <= to)
+                .GroupBy(l => l.ProductName)
+                .Select(g => new
+                {
+                    ProductName = g.Key,
+                    Quantity = g.Sum(l => l.Quantity),
+                    Sales = g.Sum(l => l.NetAmount),
+                    TxnCount = g.Select(l => l.TransactionId).Distinct().Count()
+                })
+                .OrderByDescending(x => x.Sales)
+                .ToListAsync();
+
+            var rows = data.Select(d => new ProductReportRow(d.ProductName, d.Quantity, d.Sales, d.TxnCount));
+            var excelBytes = excel.GenerateProductReport(rows, from, to, store?.Name ?? "Store");
+            return Results.File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"product_report_{from:yyyyMMdd}_{to:yyyyMMdd}.xlsx");
         });
     }
 }

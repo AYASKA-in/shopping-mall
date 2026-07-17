@@ -1,4 +1,5 @@
-namespace ShoppingMall.Server.Endpoints;
+using ShoppingMall.Business.Services;
+using ShoppingMall.Core.Models;
 
 public static class AdminEndpoints
 {
@@ -43,18 +44,65 @@ public static class AdminEndpoints
             return Results.Created($"/api/admin/stores/{created.Id}", created);
         });
 
+        group.MapPut("/stores/{id}", async (Guid id, UpdateStoreRequest request, IRepository<Store> repo) =>
+        {
+            var store = await repo.GetByIdAsync(id);
+            if (store is null) return Results.NotFound();
+
+            if (request.Name != null) store.Name = request.Name;
+            if (request.Code != null) store.Code = request.Code;
+            if (request.GSTIN != null) store.GSTIN = request.GSTIN;
+            if (request.Phone != null) store.Phone = request.Phone;
+            if (request.Status.HasValue) store.Status = request.Status.Value;
+            if (request.IsActive.HasValue) store.IsActive = request.IsActive.Value;
+            if (request.ReceiptFooter != null) store.ReceiptFooter = request.ReceiptFooter;
+            store.UpdatedAt = DateTime.UtcNow;
+            await repo.UpdateAsync(store);
+            return Results.Ok(store);
+        });
+
         group.MapGet("/users", async (IRepository<User> repo) =>
             Results.Ok(await repo.GetAllAsync()));
 
-        group.MapPut("/users/{id}/pin", async (Guid id, string newPin, IRepository<User> userRepo) =>
+        group.MapPost("/users", async (CreateUserRequest request, IRepository<User> userRepo) =>
+        {
+            var existing = await userRepo.FindAsync(u => u.Username == request.Username);
+            if (existing.Any()) return Results.BadRequest(new { error = "Username already exists" });
+
+            var (hash, salt) = AuthService.HashPin(request.Pin);
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                StoreId = request.StoreId,
+                Username = request.Username,
+                DisplayName = request.DisplayName,
+                PinHash = hash,
+                PinSalt = salt,
+                Role = request.Role,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            var created = await userRepo.AddAsync(user);
+            return Results.Created($"/api/admin/users/{created.Id}", created);
+        });
+
+        group.MapPut("/users/{id}", async (Guid id, UpdateUserRequest request, IRepository<User> userRepo) =>
         {
             var user = await userRepo.GetByIdAsync(id);
             if (user is null) return Results.NotFound();
-            var (hash, salt) = AuthService.HashPin(newPin);
-            user.PinHash = hash;
-            user.PinSalt = salt;
+
+            if (request.DisplayName != null) user.DisplayName = request.DisplayName;
+            if (request.Role.HasValue) user.Role = request.Role.Value;
+            if (request.IsActive.HasValue) user.IsActive = request.IsActive.Value;
+            if (request.Pin != null)
+            {
+                var (hash, salt) = AuthService.HashPin(request.Pin);
+                user.PinHash = hash;
+                user.PinSalt = salt;
+            }
+            user.UpdatedAt = DateTime.UtcNow;
             await userRepo.UpdateAsync(user);
-            return Results.Ok();
+            return Results.Ok(user);
         });
 
         group.MapPost("/terminals", async (Terminal terminal, IRepository<Terminal> repo) =>
@@ -119,8 +167,36 @@ public static class AdminEndpoints
             var created = await repo.AddAsync(hsn);
             return Results.Created($"/api/admin/hsn-codes/{created.Id}", created);
         });
+
+        group.MapPost("/backups/{storeId}", async (Guid storeId, CloudBackupService backup) =>
+        {
+            try
+            {
+                var result = await backup.CreateBackupAsync(storeId);
+                return Results.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
+
+        group.MapGet("/backups/{storeId}", async (Guid storeId, CloudBackupService backup) =>
+        {
+            var backups = await backup.ListBackupsAsync(storeId);
+            return Results.Ok(backups);
+        });
+
+        group.MapGet("/audit-log", async (IRepository<SyncLog> syncLogRepo) =>
+        {
+            var logs = await syncLogRepo.FindAsync(l => true);
+            return Results.Ok(logs.OrderByDescending(l => l.StartedAt).Take(100));
+        });
     }
 }
 
 public record RegisterTerminalRequest(string StoreCode, string Name);
 public record TerminalRegistrationResponse(Guid Id, Guid StoreId, string Name, string StoreName);
+public record CreateUserRequest(string Username, string DisplayName, string Pin, UserRole Role, Guid? StoreId);
+public record UpdateUserRequest(string? DisplayName, UserRole? Role, bool? IsActive, string? Pin);
+public record UpdateStoreRequest(string? Name, string? Code, string? GSTIN, string? Phone, StoreStatus? Status, bool? IsActive, string? ReceiptFooter);
