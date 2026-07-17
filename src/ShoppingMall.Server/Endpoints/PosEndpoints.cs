@@ -50,8 +50,39 @@ public static class PosEndpoints
             var txns = await txnRepo.GetByStoreAndDateAsync(storeId, DateTime.UtcNow);
             return Results.Ok(txns);
         });
+
+        group.MapPost("/transactions/{id}/suspend", async (Guid id, SuspendRequest request, IRepository<SuspendedTransaction> repo, ITransactionRepository txnRepo) =>
+        {
+            var txn = await txnRepo.GetByIdAsync(id);
+            if (txn is null) return Results.NotFound();
+
+            txn.Status = TransactionStatus.Suspended;
+            await txnRepo.UpdateAsync(txn);
+
+            var suspended = new SuspendedTransaction
+            {
+                Id = Guid.NewGuid(),
+                StoreId = txn.StoreId,
+                TerminalId = txn.TerminalId,
+                UserId = txn.UserId,
+                BasketData = request.BasketData,
+                BasketTotal = request.BasketTotal,
+                ItemCount = request.ItemCount,
+                SuspendedAt = DateTime.UtcNow
+            };
+            await repo.AddAsync(suspended);
+            return Results.Ok(suspended);
+        });
+
+        group.MapGet("/transactions/suspended/{storeId}", async (Guid storeId, IRepository<SuspendedTransaction> repo) =>
+        {
+            var suspended = await repo.FindAsync(s => s.StoreId == storeId && !s.IsRecalled);
+            return Results.Ok(suspended.OrderByDescending(s => s.SuspendedAt).Take(20));
+        });
     }
 }
+
+public record SuspendRequest(string BasketData, decimal BasketTotal, int ItemCount);
 
 public record CreateTransactionRequest(Guid StoreId, Guid TerminalId, Guid? UserId);
 public record AddLineItemRequest(Guid ProductId, decimal Quantity, decimal? OverridePrice);

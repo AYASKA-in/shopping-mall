@@ -86,6 +86,32 @@ public class ApiClient
         try { return await _http.GetFromJsonAsync<DashboardData>($"/api/reports/dashboard/{storeId}"); }
         catch { return null; }
     }
+
+    // Suspend / Recall
+    public async Task SuspendTransactionAsync(Guid transactionId, string basketData, decimal basketTotal, int itemCount)
+    {
+        var response = await _http.PostAsJsonAsync($"/api/pos/transactions/{transactionId}/suspend",
+            new { basketData, basketTotal, itemCount });
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<List<SuspendedTransaction>> GetSuspendedTransactionsAsync(Guid storeId)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<SuspendedTransaction>>($"/api/pos/transactions/suspended/{storeId}") ?? new();
+        }
+        catch { return new(); }
+    }
+
+    public async Task<List<Transaction>> GetTodayTransactionsAsync(Guid storeId)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<Transaction>>($"/api/pos/transactions/store/{storeId}/today") ?? new();
+        }
+        catch { return new(); }
+    }
 }
 
 public record LoginResult(Guid Id, string DisplayName, string Role, Guid? StoreId, Guid SessionId);

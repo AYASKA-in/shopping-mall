@@ -50,6 +50,9 @@ public class ProductRepository : BaseRepository<Product>, IProductRepository
     public async Task<Product?> GetBySKUAsync(string sku)
         => await _dbSet.FirstOrDefaultAsync(p => p.SKU == sku);
 
+    public async Task<Product?> GetByPLUAsync(string pluCode)
+        => await _dbSet.FirstOrDefaultAsync(p => p.PLUCode == pluCode);
+
     public async Task<IEnumerable<Product>> SearchAsync(string query)
     {
         var q = query.ToLower();

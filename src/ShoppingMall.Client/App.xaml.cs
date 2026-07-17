@@ -24,6 +24,9 @@ public partial class App : Application
         services.AddSingleton<AppConfiguration>();
         services.AddHttpClient<ApiClient>();
         services.AddSingleton<Offline.OfflineCache>();
+        services.AddSingleton<CartService>();
+        services.AddSingleton<ThermalPrinterService>();
+        services.AddSingleton<BackgroundSyncService>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<PosViewModel>();
@@ -69,6 +72,9 @@ public partial class App : Application
 
     private void OpenMainWindow()
     {
+        var syncService = Services.GetRequiredService<BackgroundSyncService>();
+        syncService.Start();
+
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
     }

@@ -46,18 +46,26 @@ public class OfflineCache : IDisposable
         cmd.ExecuteNonQuery();
     }
 
-    public async Task QueueTransactionAsync(string payload)
+    public async Task QueueTransactionAsync(string payload, string? storeId = null, string? terminalId = null)
     {
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = @"
             INSERT INTO pending_transactions (id, store_id, terminal_id, payload, created_at, synced)
             VALUES (@id, @storeId, @terminalId, @payload, @createdAt, 0)";
         cmd.Parameters.AddWithValue("@id", Guid.NewGuid().ToString());
-        cmd.Parameters.AddWithValue("@storeId", "");
-        cmd.Parameters.AddWithValue("@terminalId", "");
+        cmd.Parameters.AddWithValue("@storeId", storeId ?? "");
+        cmd.Parameters.AddWithValue("@terminalId", terminalId ?? "");
         cmd.Parameters.AddWithValue("@payload", payload);
         cmd.Parameters.AddWithValue("@createdAt", DateTime.UtcNow.ToString("O"));
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<int> GetPendingCountAsync()
+    {
+        using var cmd = _connection.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM pending_transactions WHERE synced = 0";
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
     }
 
     public async Task<List<string>> GetPendingTransactionsAsync()

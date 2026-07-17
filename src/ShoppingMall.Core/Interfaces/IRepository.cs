@@ -25,6 +25,7 @@ public interface IProductRepository : IRepository<Product>
 {
     Task<Product?> GetByBarcodeAsync(string barcode);
     Task<Product?> GetBySKUAsync(string sku);
+    Task<Product?> GetByPLUAsync(string pluCode);
     Task<IEnumerable<Product>> SearchAsync(string query);
 }
 
