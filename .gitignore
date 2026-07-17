@@ -480,5 +480,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Installer distribution archives
+installer/*.zip
+installer/dist/
+
 # Vim temporary swap files
 *.swp
