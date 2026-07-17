@@ -1,3 +1,7 @@
+using ShoppingMall.Business.Services;
+using ShoppingMall.Core.Models;
+using ShoppingMall.Core.Interfaces;
+
 namespace ShoppingMall.Server.Endpoints;
 
 public static class ProductEndpoints
@@ -25,11 +29,35 @@ public static class ProductEndpoints
             return product is null ? Results.NotFound() : Results.Ok(product);
         });
 
-        group.MapPost("/", async (Product product, IProductRepository repo) =>
+        group.MapGet("/plu/{pluCode}", async (string pluCode, IProductRepository repo) =>
+        {
+            var product = await repo.GetByPLUAsync(pluCode);
+            return product is null ? Results.NotFound() : Results.Ok(product);
+        });
+
+        group.MapGet("/brands", async (IRepository<Brand> repo) =>
+            Results.Ok(await repo.GetAllAsync()));
+
+        group.MapGet("/uoms", async (IRepository<UOM> repo) =>
+            Results.Ok(await repo.GetAllAsync()));
+
+        group.MapGet("/hsn-codes", async (IRepository<HSN> repo) =>
+            Results.Ok(await repo.GetAllAsync()));
+
+        group.MapPost("/", async (Product product, IProductRepository repo, IRepository<Barcode> barcodeRepo) =>
         {
             product.Id = Guid.NewGuid();
             product.CreatedAt = DateTime.UtcNow;
             var created = await repo.AddAsync(product);
+
+            var defaultBarcode = product.Barcodes.FirstOrDefault();
+            if (defaultBarcode != null)
+            {
+                defaultBarcode.Id = Guid.NewGuid();
+                defaultBarcode.ProductId = created.Id;
+                await barcodeRepo.AddAsync(defaultBarcode);
+            }
+
             return Results.Created($"/api/products/{created.Id}", created);
         });
 
@@ -40,6 +68,17 @@ public static class ProductEndpoints
             await repo.UpdateAsync(product);
             return Results.Ok(product);
         });
+
+        group.MapPost("/import", async (HttpRequest request, ProductBulkImportService importService) =>
+        {
+            if (!request.HasFormContentType || request.Form.Files.Count == 0)
+                return Results.BadRequest("No file uploaded");
+
+            var file = request.Form.Files[0];
+            using var stream = file.OpenReadStream();
+            var result = await importService.ImportFromStreamAsync(stream, file.FileName);
+            return Results.Ok(result);
+        }).DisableAntiforgery();
 
         group.MapGet("/categories", async (IRepository<Category> repo) =>
             Results.Ok(await repo.GetAllAsync()));

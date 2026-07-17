@@ -1,4 +1,7 @@
 using ShoppingMall.Business.Services;
+using ShoppingMall.Core.Enums;
+using ShoppingMall.Core.Models;
+using ShoppingMall.Core.Interfaces;
 
 namespace ShoppingMall.Server.Endpoints;
 
@@ -20,15 +23,38 @@ public static class InventoryEndpoints
         group.MapGet("/stock/{storeId}/movements/{productId}", async (Guid storeId, Guid productId, DateTime from, DateTime to, InventoryService inv) =>
             Results.Ok(await inv.GetStockMovementAsync(storeId, productId, from, to)));
 
-        group.MapPost("/grn", async (GoodsReceipt grn, IRepository<GoodsReceipt> grnRepo, InventoryService inv) =>
+        group.MapPost("/grn", async (GoodsReceipt grn, IRepository<GoodsReceipt> grnRepo,
+            IRepository<PurchaseOrder> poRepo, IRepository<POLine> poLineRepo,
+            PurchaseOrderService poService, InventoryService inv) =>
         {
             grn.Id = Guid.NewGuid();
-            grn.Status = Core.Enums.GRNStatus.Completed;
+            grn.Status = GRNStatus.Completed;
             var created = await grnRepo.AddAsync(grn);
 
             foreach (var line in grn.Lines)
             {
                 await inv.AddStockAsync(grn.StoreId, line.ProductId, line.AcceptedQty, "GRN", created.Id, line.UnitPrice);
+
+                if (grn.POId.HasValue)
+                {
+                    var poLines = await poLineRepo.FindAsync(pl => pl.POId == grn.POId && pl.ProductId == line.ProductId);
+                    foreach (var poLine in poLines)
+                    {
+                        poLine.ReceivedQty += line.ReceivedQty;
+                        poLine.AcceptedQty += line.AcceptedQty;
+                        poLine.RejectedQty += line.RejectedQty;
+                        await poLineRepo.UpdateAsync(poLine);
+                    }
+
+                    var allLines = await poLineRepo.FindAsync(pl => pl.POId == grn.POId);
+                    var totalOrdered = allLines.Sum(pl => pl.OrderedQty);
+                    var totalAccepted = allLines.Sum(pl => pl.AcceptedQty);
+
+                    if (totalAccepted >= totalOrdered)
+                        await poService.MarkFullyReceivedAsync(grn.POId.Value);
+                    else
+                        await poService.MarkPartiallyReceivedAsync(grn.POId.Value);
+                }
             }
 
             return Results.Created($"/api/inventory/grn/{created.Id}", created);

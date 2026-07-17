@@ -58,5 +58,6 @@ app.MapProcurementEndpoints();
 app.MapReportEndpoints();
 app.MapSyncEndpoints();
 app.MapAdminEndpoints();
+app.MapCustomerEndpoints();
 
 app.Run();

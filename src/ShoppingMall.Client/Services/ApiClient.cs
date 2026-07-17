@@ -137,6 +137,24 @@ public class ApiClient
         }
         catch { return new(); }
     }
+
+    // Generic helpers
+    public async Task<T?> HttpGetAsync<T>(string url) where T : class
+    {
+        try { return await _http.GetFromJsonAsync<T>(url); }
+        catch { return null; }
+    }
+
+    public async Task<T?> HttpPostAsync<T>(string url, object body) where T : class
+    {
+        try
+        {
+            var response = await _http.PostAsJsonAsync(url, body);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        catch { return null; }
+    }
 }
 
 public record LoginResult(Guid Id, string DisplayName, string Role, Guid? StoreId, Guid SessionId);

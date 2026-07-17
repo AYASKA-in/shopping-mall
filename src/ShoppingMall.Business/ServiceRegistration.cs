@@ -16,6 +16,8 @@ public static class ServiceRegistration
         services.AddScoped<PromotionEngine>();
         services.AddScoped<LoyaltyService>();
         services.AddScoped<BarcodeService>();
+        services.AddScoped<ProductBulkImportService>();
+        services.AddScoped<PurchaseOrderService>();
 
         services.AddValidatorsFromAssemblyContaining<TransactionValidator>();
 

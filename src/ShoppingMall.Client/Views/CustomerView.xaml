@@ -1,0 +1,58 @@
+<UserControl x:Class="ShoppingMall.Client.Views.CustomerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Left Panel: Search & Create -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,20,10">
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Search by phone or name..." Padding="10,8" FontSize="16" Margin="0,0,10,0"/>
+                <Button Grid.Column="1" Content="Search" Command="{Binding SearchCommand}" Padding="15,8" FontSize="14"/>
+            </Grid>
+
+            <Border BorderBrush="#CCC" BorderThickness="1" Padding="15" CornerRadius="8" Margin="0,10,0,0">
+                <StackPanel>
+                    <TextBlock Text="Create New Customer" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding NewFirstName}" ToolTip="First Name *" Padding="8" Margin="0,0,0,8" FontSize="14"/>
+                    <TextBox Text="{Binding NewLastName}" ToolTip="Last Name" Padding="8" Margin="0,0,0,8" FontSize="14"/>
+                    <TextBox Text="{Binding NewPhone}" ToolTip="Phone *" Padding="8" Margin="0,0,0,8" FontSize="14"/>
+                    <TextBox Text="{Binding NewEmail}" ToolTip="Email" Padding="8" Margin="0,0,0,8" FontSize="14"/>
+                    <Button Content="Create Customer" Command="{Binding CreateCustomerCommand}"
+                            Padding="15,8" FontSize="14" Background="#1A56DB" Foreground="White"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding CustomerInfo}" FontSize="14" FontWeight="SemiBold"
+                       Margin="0,10,0,0" Foreground="#1A56DB"/>
+        </StackPanel>
+
+        <!-- Right Panel: Purchase History -->
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1">
+            <TextBlock Text="Purchase History" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
+            <DataGrid ItemsSource="{Binding PurchaseHistory}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      FontSize="13" RowHeight="30"
+                      AlternatingRowBackground="#FFF8F0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Receipt" Binding="{Binding ReceiptNumber}" Width="120"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat={}{0:dd-MMM-yyyy HH:mm}}" Width="160"/>
+                    <DataGridTextColumn Header="Total" Binding="{Binding GrandTotal, StringFormat={}{0:N2}}" Width="100"/>
+                    <DataGridTextColumn Header="Items" Binding="{Binding Lines.Count}" Width="70"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</UserControl>

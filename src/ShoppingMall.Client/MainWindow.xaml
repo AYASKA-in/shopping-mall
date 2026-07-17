@@ -30,6 +30,12 @@
                             Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Inventory" Command="{Binding NavigateToInventoryCommand}"
                             Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                    <Button Content="Products" Command="{Binding NavigateToProductListCommand}"
+                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                    <Button Content="Suppliers" Command="{Binding NavigateToSupplierListCommand}"
+                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                    <Button Content="Customers" Command="{Binding NavigateToCustomerCommand}"
+                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Reports" Command="{Binding NavigateToReportsCommand}"
                             Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Admin" Command="{Binding NavigateToAdminCommand}"
@@ -48,5 +54,11 @@
         <views:LoginView Grid.Row="1" Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}}"/>
         <views:PosView Grid.Row="1" DataContext="{Binding PosVM}" 
                        Visibility="{Binding IsPosView, Converter={StaticResource BoolToVis}}"/>
+        <views:ProductListView Grid.Row="1" DataContext="{Binding ProductListVM}"
+                               Visibility="{Binding IsProductListView, Converter={StaticResource BoolToVis}}"/>
+        <views:SupplierListView Grid.Row="1" DataContext="{Binding SupplierListVM}"
+                                Visibility="{Binding IsSupplierListView, Converter={StaticResource BoolToVis}}"/>
+        <views:CustomerView Grid.Row="1" DataContext="{Binding CustomerVM}"
+                            Visibility="{Binding IsCustomerView, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </Window>

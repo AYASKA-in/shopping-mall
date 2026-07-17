@@ -1,0 +1,37 @@
+<UserControl x:Class="ShoppingMall.Client.Views.ProductListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Search products by name, SKU, or barcode..." Padding="10,8"
+                     FontSize="16" Margin="0,0,10,0"/>
+            <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}"
+                    Padding="20,8" FontSize="14"/>
+        </Grid>
+
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Products}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  SelectedItem="{Binding SelectedProduct}"
+                  FontSize="14" RowHeight="35"
+                  AlternatingRowBackground="#F0F4FF">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="120"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="MRP" Binding="{Binding Mrp, StringFormat={}{0:N2}}" Width="100"/>
+                <DataGridTextColumn Header="Selling Price" Binding="{Binding SellingPrice, StringFormat={}{0:N2}}" Width="120"/>
+                <DataGridTextColumn Header="Tax Rate" Binding="{Binding TaxRate, StringFormat={}{0:P}}" Width="100"/>
+                <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
