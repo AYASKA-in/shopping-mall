@@ -32,12 +32,14 @@ public static class AuthEndpoints
 
         group.MapPost("/register", async (RegisterUserRequest request, AuthService auth, IRepository<User> userRepo) =>
         {
+            var (hash, salt) = AuthService.HashPin(request.Pin);
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Username = request.Username,
                 DisplayName = request.DisplayName,
-                PinHash = AuthService.HashPin(request.Pin),
+                PinHash = hash,
+                PinSalt = salt,
                 Role = request.Role,
                 StoreId = request.StoreId,
                 CreatedAt = DateTime.UtcNow

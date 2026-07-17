@@ -66,6 +66,13 @@ public class ShoppingMallDbContext : Microsoft.EntityFrameworkCore.DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShoppingMallDbContext).Assembly);
+
+        foreach (var fk in modelBuilder.Model.GetEntityTypes()
+            .SelectMany(e => e.GetForeignKeys()))
+        {
+            fk.DeleteBehavior = DeleteBehavior.Restrict;
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 }

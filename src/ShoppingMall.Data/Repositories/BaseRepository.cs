@@ -20,6 +20,12 @@ public class BaseRepository<T> : IRepository<T> where T : class
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
+    public virtual async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+    {
+        var query = includes.Aggregate(_dbSet.AsQueryable(), (current, include) => current.Include(include));
+        return await query.ToListAsync();
+    }
+
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         => await _dbSet.Where(predicate).ToListAsync();
 

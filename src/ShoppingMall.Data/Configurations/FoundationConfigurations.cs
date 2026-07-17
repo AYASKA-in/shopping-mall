@@ -82,6 +82,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(x => x.Username).IsUnique();
         builder.Property(x => x.DisplayName).HasMaxLength(100).IsRequired();
         builder.Property(x => x.PinHash).HasMaxLength(255).IsRequired();
+        builder.Property(x => x.PinSalt).HasMaxLength(64);
         builder.Property(x => x.Role).HasConversion<string>().HasMaxLength(20);
         builder.HasOne(x => x.Store).WithMany().HasForeignKey(x => x.StoreId).IsRequired(false);
     }

@@ -33,6 +33,7 @@ public class CurrentStock
     public decimal Available { get; set; }
     public decimal OnOrder { get; set; }
     public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
+    public uint RowVersion { get; set; }
 
     public Store Store { get; set; } = null!;
     public Product Product { get; set; } = null!;

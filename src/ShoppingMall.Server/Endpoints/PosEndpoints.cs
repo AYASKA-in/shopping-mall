@@ -56,6 +56,9 @@ public static class PosEndpoints
             var txn = await txnRepo.GetByIdAsync(id);
             if (txn is null) return Results.NotFound();
 
+            if (txn.Status == TransactionStatus.Suspended)
+                return Results.Ok(new { message = "Already suspended" });
+
             txn.Status = TransactionStatus.Suspended;
             await txnRepo.UpdateAsync(txn);
 

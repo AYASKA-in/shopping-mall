@@ -18,6 +18,7 @@ public class Transaction
     public Guid? IdempotencyKey { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public uint RowVersion { get; set; }
 
     public Store Store { get; set; } = null!;
     public Terminal Terminal { get; set; } = null!;

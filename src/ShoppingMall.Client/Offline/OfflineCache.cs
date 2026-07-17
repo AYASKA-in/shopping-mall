@@ -87,14 +87,18 @@ public class OfflineCache : IDisposable
         await cmd.ExecuteNonQueryAsync();
     }
 
-    public async Task CacheProductAsync(object product)
+    public async Task CacheProductAsync(Core.Models.Product product)
     {
         var json = JsonSerializer.Serialize(product);
         using var cmd = _connection.CreateCommand();
         cmd.CommandText = @"
             INSERT OR REPLACE INTO cached_products (id, barcode, sku, name, data, cached_at)
             VALUES (@id, @barcode, @sku, @name, @data, @cachedAt)";
-        cmd.Parameters.AddWithValue("@id", Guid.NewGuid().ToString());
+        cmd.Parameters.AddWithValue("@id", product.Id.ToString());
+        cmd.Parameters.AddWithValue("@barcode", (object?)product.Barcodes?.FirstOrDefault()?.Code ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@sku", product.SKU);
+        cmd.Parameters.AddWithValue("@name", product.Name);
+        cmd.Parameters.AddWithValue("@data", json);
         cmd.Parameters.AddWithValue("@cachedAt", DateTime.UtcNow.ToString("O"));
         await cmd.ExecuteNonQueryAsync();
     }

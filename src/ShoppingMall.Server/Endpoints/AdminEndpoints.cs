@@ -50,7 +50,9 @@ public static class AdminEndpoints
         {
             var user = await userRepo.GetByIdAsync(id);
             if (user is null) return Results.NotFound();
-            user.PinHash = AuthService.HashPin(newPin);
+            var (hash, salt) = AuthService.HashPin(newPin);
+            user.PinHash = hash;
+            user.PinSalt = salt;
             await userRepo.UpdateAsync(user);
             return Results.Ok();
         });
@@ -97,6 +99,15 @@ public static class AdminEndpoints
                 }
             }
             return Results.Ok();
+        });
+
+        group.MapPost("/terminals/{id}/heartbeat", async (Guid id, IRepository<Terminal> repo) =>
+        {
+            var terminal = await repo.GetByIdAsync(id);
+            if (terminal is null) return Results.NotFound();
+            terminal.LastHeartbeat = DateTime.UtcNow;
+            await repo.UpdateAsync(terminal);
+            return Results.Ok(new { lastHeartbeat = terminal.LastHeartbeat });
         });
 
         group.MapGet("/hsn-codes", async (IRepository<HSN> repo) =>

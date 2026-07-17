@@ -15,16 +15,41 @@ public class ApiClient
         _http.BaseAddress = new Uri(_baseUrl);
     }
 
+    public void SetSessionId(Guid sessionId)
+    {
+        _http.DefaultRequestHeaders.Remove("X-Session-Id");
+        _http.DefaultRequestHeaders.Add("X-Session-Id", sessionId.ToString());
+    }
+
+    public void ClearSessionId()
+    {
+        _http.DefaultRequestHeaders.Remove("X-Session-Id");
+    }
+
     // Auth
     public async Task<LoginResult?> LoginAsync(string username, string pin, Guid terminalId)
     {
         var response = await _http.PostAsJsonAsync("/api/auth/login", new { username, pin, terminalId });
         if (!response.IsSuccessStatusCode) return null;
-        return await response.Content.ReadFromJsonAsync<LoginResult>();
+        var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+        if (result != null) SetSessionId(result.SessionId);
+        return result;
+    }
+
+    public async Task SendHeartbeatAsync(Guid terminalId)
+    {
+        try
+        {
+            await _http.PostAsync($"/api/admin/terminals/{terminalId}/heartbeat", null);
+        }
+        catch { }
     }
 
     public async Task LogoutAsync(Guid sessionId)
-        => await _http.PostAsJsonAsync("/api/auth/logout", sessionId);
+    {
+        try { await _http.PostAsJsonAsync("/api/auth/logout", sessionId); } catch { }
+        ClearSessionId();
+    }
 
     // POS
     public async Task<Transaction?> CreateTransactionAsync(Guid storeId, Guid terminalId, Guid? userId)

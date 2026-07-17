@@ -9,10 +9,13 @@ namespace ShoppingMall.Data.Seed;
 
 public static class DbInitializer
 {
-    private static string HashPin(string pin)
+    private static (string hash, string salt) HashPin(string pin)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(pin));
-        return Convert.ToHexString(bytes).ToLower();
+        var saltBytes = RandomNumberGenerator.GetBytes(16);
+        var salt = Convert.ToHexString(saltBytes).ToLowerInvariant();
+        var hash = Convert.ToHexString(Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(pin), saltBytes, 100_000, HashAlgorithmName.SHA256, 32)).ToLowerInvariant();
+        return (hash, salt);
     }
 
     public static async Task InitializeAsync(ShoppingMallDbContext db)
@@ -78,13 +81,15 @@ public static class DbInitializer
         };
         db.Terminals.Add(terminal);
 
+        var (adminHash, adminSalt) = HashPin("1234");
         var adminUser = new User
         {
             Id = Guid.NewGuid(),
             StoreId = storeId,
             Username = "admin",
             DisplayName = "Store Admin",
-            PinHash = HashPin("1234"),
+            PinHash = adminHash,
+            PinSalt = adminSalt,
             Email = "admin@shoppingmart.in",
             Phone = "9876543210",
             Role = UserRole.StoreManager,
@@ -94,13 +99,15 @@ public static class DbInitializer
         };
         db.Users.Add(adminUser);
 
+        var (cashierHash, cashierSalt) = HashPin("0000");
         var cashierUser = new User
         {
             Id = Guid.NewGuid(),
             StoreId = storeId,
             Username = "cashier1",
             DisplayName = "Rohit Sharma",
-            PinHash = HashPin("0000"),
+            PinHash = cashierHash,
+            PinSalt = cashierSalt,
             Role = UserRole.Cashier,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,

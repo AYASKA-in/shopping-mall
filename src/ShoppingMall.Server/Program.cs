@@ -42,6 +42,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<SessionAuthMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

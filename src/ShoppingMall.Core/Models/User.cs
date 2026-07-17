@@ -7,6 +7,7 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public string PinHash { get; set; } = string.Empty;
+    public string? PinSalt { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public UserRole Role { get; set; } = UserRole.Cashier;

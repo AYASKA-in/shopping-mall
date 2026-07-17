@@ -59,6 +59,11 @@ public class PosService
         if (transaction == null || transaction.Status != Core.Enums.TransactionStatus.Active)
             throw new InvalidOperationException("Transaction not found or not active");
 
+        // Idempotency — skip if line with same product already exists (prevents offline replay duplicates)
+        var existingLine = transaction.Lines.FirstOrDefault(l => l.ProductId == productId);
+        if (existingLine != null)
+            return existingLine;
+
         var unitPrice = overridePrice ?? product.SellingPrice ?? 0;
         var discountAmount = 0m;
         var taxRate = product.TaxRate;
@@ -100,6 +105,15 @@ public class PosService
         if (transaction == null)
             throw new InvalidOperationException("Transaction not found");
 
+        if (transaction.Status == Core.Enums.TransactionStatus.Completed)
+            throw new InvalidOperationException("Transaction already completed");
+
+        // Check idempotency — skip if payment with same details already exists
+        var existingPayment = transaction.Payments.FirstOrDefault(p =>
+            p.Amount == amount && p.Method == method);
+        if (existingPayment != null)
+            return existingPayment;
+
         var payment = new Payment
         {
             Id = Guid.NewGuid(),
@@ -107,20 +121,16 @@ public class PosService
             Method = method,
             Amount = amount,
             TenderedAmount = tenderedAmount,
-            ChangeAmount = tenderedAmount - amount,
+            ChangeAmount = (tenderedAmount ?? 0) - amount,
             Status = Core.Enums.PaymentStatus.Captured,
             IdempotencyKey = Guid.NewGuid(),
             CreatedAt = DateTime.UtcNow
         };
 
-        await _paymentRepo.AddAsync(payment);
+        transaction.Status = Core.Enums.TransactionStatus.Completed;
+        transaction.Payments.Add(payment);
 
-        var totalPaid = transaction.Payments.Sum(p => p.Amount) + amount;
-        if (totalPaid >= transaction.GrandTotal)
-        {
-            transaction.Status = Core.Enums.TransactionStatus.Completed;
-            await _transactionRepo.UpdateAsync(transaction);
-        }
+        await _transactionRepo.UpdateAsync(transaction);
 
         return payment;
     }

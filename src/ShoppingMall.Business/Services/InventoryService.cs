@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
 
@@ -20,6 +21,23 @@ public class InventoryService
     }
 
     public async Task DeductStockAsync(Guid storeId, Guid productId, decimal quantity, string referenceType, Guid referenceId, decimal unitCost = 0)
+    {
+        const int maxRetries = 3;
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                await DeductStockInternalAsync(storeId, productId, quantity, referenceType, referenceId, unitCost);
+                return;
+            }
+            catch (DbUpdateConcurrencyException) when (attempt < maxRetries - 1)
+            {
+                continue;
+            }
+        }
+    }
+
+    private async Task DeductStockInternalAsync(Guid storeId, Guid productId, decimal quantity, string referenceType, Guid referenceId, decimal unitCost)
     {
         var stock = await _stockRepo.GetByStoreAndProductAsync(storeId, productId);
         if (stock == null)

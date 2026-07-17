@@ -18,6 +18,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).IsRequired(false);
         builder.HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).IsRequired(false);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique().HasFilter("\"IdempotencyKey\" IS NOT NULL");
+        builder.HasIndex(x => new { x.StoreId, x.Status, x.CreatedAt });
     }
 }
 
@@ -44,6 +45,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.ReferenceNumber).HasMaxLength(100);
         builder.HasOne(x => x.Transaction).WithMany(t => t.Payments).HasForeignKey(x => x.TransactionId);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique().HasFilter("\"IdempotencyKey\" IS NOT NULL");
+        builder.HasIndex(x => new { x.TransactionId, x.Method, x.CreatedAt });
     }
 }
 

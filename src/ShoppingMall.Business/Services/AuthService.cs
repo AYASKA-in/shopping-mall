@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
 
@@ -26,7 +25,7 @@ public class AuthService
         if (user == null)
             return AuthResult.Failure("Invalid credentials");
 
-        if (!VerifyPin(pin, user.PinHash))
+        if (!VerifyPin(pin, user.PinHash, user.PinSalt))
             return AuthResult.Failure("Invalid credentials");
 
         var terminal = await _terminalRepo.GetByIdAsync(terminalId);
@@ -63,15 +62,32 @@ public class AuthService
         }
     }
 
-    public static string HashPin(string pin)
+    private static readonly System.Text.Encoding _enc = System.Text.Encoding.UTF8;
+
+    public static (string hash, string salt) HashPin(string pin)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(pin));
-        return Convert.ToHexString(bytes).ToLower();
+        var saltBytes = RandomNumberGenerator.GetBytes(16);
+        var salt = Convert.ToHexString(saltBytes).ToLowerInvariant();
+        var hash = Convert.ToHexString(Rfc2898DeriveBytes.Pbkdf2(
+            _enc.GetBytes(pin), saltBytes, 100_000, HashAlgorithmName.SHA256, 32)).ToLowerInvariant();
+        return (hash, salt);
     }
 
-    public static bool VerifyPin(string pin, string hash)
+    public static bool VerifyPin(string pin, string hash, string? salt)
     {
-        return HashPin(pin) == hash;
+        if (string.IsNullOrEmpty(salt))
+            return LegacyHash(pin) == hash;
+
+        var saltBytes = Convert.FromHexString(salt);
+        var computed = Convert.ToHexString(Rfc2898DeriveBytes.Pbkdf2(
+            _enc.GetBytes(pin), saltBytes, 100_000, HashAlgorithmName.SHA256, 32)).ToLowerInvariant();
+        return computed == hash;
+    }
+
+    private static string LegacyHash(string pin)
+    {
+        var bytes = SHA256.HashData(_enc.GetBytes(pin));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }
 

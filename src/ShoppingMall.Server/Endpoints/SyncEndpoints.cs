@@ -1,3 +1,5 @@
+using ShoppingMall.Core.Enums;
+
 namespace ShoppingMall.Server.Endpoints;
 
 public static class SyncEndpoints

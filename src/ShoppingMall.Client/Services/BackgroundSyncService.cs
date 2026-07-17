@@ -61,6 +61,15 @@ public class BackgroundSyncService : IDisposable
         }
     }
 
+    private async Task SendHeartbeatAsync()
+    {
+        try
+        {
+            await _api.SendHeartbeatAsync(_config.Load().TerminalId);
+        }
+        catch { }
+    }
+
     private async Task TrySyncAsync()
     {
         if (_isSyncing) return;
@@ -70,6 +79,8 @@ public class BackgroundSyncService : IDisposable
         {
             await CheckConnectivityAsync();
             if (!IsOnline) return;
+
+            await SendHeartbeatAsync();
 
             var pending = await _offline.GetPendingTransactionsAsync();
             if (pending.Count == 0) return;

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
@@ -7,6 +8,8 @@ namespace ShoppingMall.Data.Repositories;
 
 public class TransactionRepository : BaseRepository<Transaction>, ITransactionRepository
 {
+    private static readonly ConcurrentDictionary<string, int> _receiptCounters = new();
+
     public TransactionRepository(ShoppingMallDbContext context) : base(context) { }
 
     public async Task<Transaction?> GetByReceiptNumberAsync(string receiptNumber)
@@ -27,12 +30,15 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
         var store = await _context.Stores.FindAsync(storeId);
         var storeCode = store?.Code ?? "XXX";
         var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
+        var key = $"{storeId}-{datePart}";
 
-        var todayStart = DateTime.UtcNow.Date;
-        var todayEnd = todayStart.AddDays(1);
-
-        var count = await _dbSet
-            .CountAsync(t => t.CreatedAt >= todayStart && t.CreatedAt < todayEnd) + 1;
+        var count = _receiptCounters.AddOrUpdate(key,
+            k => {
+                var todayStart = DateTime.UtcNow.Date;
+                var todayEnd = todayStart.AddDays(1);
+                return _dbSet.Count(t => t.CreatedAt >= todayStart && t.CreatedAt < todayEnd) + 1;
+            },
+            (_, v) => v + 1);
 
         return $"{storeCode}-{datePart}-{count:D4}";
     }

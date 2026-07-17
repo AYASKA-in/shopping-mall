@@ -56,7 +56,12 @@ public class MainViewModel : BaseViewModel
         NavigateToInventoryCommand = new RelayCommand(_ => CurrentView = AppView.Inventory);
         NavigateToReportsCommand = new RelayCommand(_ => CurrentView = AppView.Reports);
         NavigateToAdminCommand = new RelayCommand(_ => CurrentView = AppView.Admin);
-        LogoutCommand = new RelayCommand(_ => CurrentView = AppView.Login);
+        LogoutCommand = new RelayCommand(async _ =>
+        {
+            _api.ClearSessionId();
+            CurrentView = AppView.Login;
+            await Task.CompletedTask;
+        });
     }
 
     public void OnLoginSucceeded(LoginResult result)
