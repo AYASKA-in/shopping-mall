@@ -38,4 +38,5 @@ public class ClientConfig
     public string TerminalName { get; set; } = "POS-1";
     public bool AutoConnect { get; set; } = true;
     public bool IsConfigured { get; set; }
+    public string? Language { get; set; }
 }

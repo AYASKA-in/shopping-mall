@@ -1,0 +1,71 @@
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"&gt;
+	&lt;Product Id="*" Name="Shopping Mall POS" Language="1033" Version="1.0.0" Manufacturer="ShoppingMall" UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890"&gt;
+		&lt;Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" /&gt;
+
+		&lt;MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." /&gt;
+		&lt;MediaTemplate EmbedCab="yes" /&gt;
+
+		&lt;Feature Id="ProductFeature" Title="Shopping Mall POS" Level="1"&gt;
+			&lt;ComponentGroupRef Id="ProductComponents" /&gt;
+			&lt;ComponentGroupRef Id="ServerComponents" /&gt;
+			&lt;ComponentGroupRef Id="ShortcutComponents" /&gt;
+		&lt;/Feature&gt;
+
+		&lt;Icon Id="app.ico" SourceFile="..\src\ShoppingMall.Client\app.ico" /&gt;
+		&lt;Property Id="ARPPRODUCTICON" Value="app.ico" /&gt;
+
+		&lt;UIRef Id="WixUI_Minimal" /&gt;
+	&lt;/Product&gt;
+
+	&lt;Fragment&gt;
+		&lt;Directory Id="TARGETDIR" Name="SourceDir"&gt;
+			&lt;Directory Id="ProgramFiles64Folder"&gt;
+				&lt;Directory Id="INSTALLFOLDER" Name="ShoppingMall" /&gt;
+			&lt;/Directory&gt;
+			&lt;Directory Id="ProgramMenuFolder"&gt;
+				&lt;Directory Id="ApplicationProgramsFolder" Name="Shopping Mall POS" /&gt;
+			&lt;/Directory&gt;
+			&lt;Directory Id="DesktopFolder" Name="Desktop" /&gt;
+		&lt;/Directory&gt;
+	&lt;/Fragment&gt;
+
+	&lt;Fragment&gt;
+		&lt;ComponentGroup Id="ShortcutComponents" Directory="ApplicationProgramsFolder"&gt;
+			&lt;Component Id="ApplicationShortcut" Guid="*"&gt;
+				&lt;Shortcut Id="ApplicationStartMenuShortcut" Name="Shopping Mall POS" Description="Shopping Mall POS" Target="[INSTALLFOLDER]ShoppingMall.Client.exe" WorkingDirectory="INSTALLFOLDER" /&gt;
+				&lt;Shortcut Id="DesktopShortcut" Name="Shopping Mall POS" Directory="DesktopFolder" Target="[INSTALLFOLDER]ShoppingMall.Client.exe" WorkingDirectory="INSTALLFOLDER" /&gt;
+				&lt;RegistryValue Root="HKCU" Key="Software\ShoppingMall" Name="installed" Type="integer" Value="1" KeyPath="yes" /&gt;
+				&lt;RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" /&gt;
+			&lt;/Component&gt;
+		&lt;/ComponentGroup&gt;
+	&lt;/Fragment&gt;
+
+	&lt;Fragment&gt;
+		&lt;ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER"&gt;
+			&lt;Component Id="ClientExe" Guid="*"&gt;
+				&lt;File Id="ShoppingMall.Client.exe" Name="ShoppingMall.Client.exe" Source="..\src\ShoppingMall.Client\bin\Release\net8.0-windows\publish\ShoppingMall.Client.exe" KeyPath="yes" /&gt;
+			&lt;/Component&gt;
+			&lt;Component Id="ClientDll" Guid="*"&gt;
+				&lt;File Id="ShoppingMall.Client.dll" Name="ShoppingMall.Client.dll" Source="..\src\ShoppingMall.Client\bin\Release\net8.0-windows\publish\ShoppingMall.Client.dll" /&gt;
+			&lt;/Component&gt;
+			&lt;Component Id="CoreDll" Guid="*"&gt;
+				&lt;File Id="ShoppingMall.Core.dll" Name="ShoppingMall.Core.dll" Source="..\src\ShoppingMall.Core\bin\Release\net8.0\ShoppingMall.Core.dll" /&gt;
+			&lt;/Component&gt;
+			&lt;Component Id="AppSettings" Guid="*"&gt;
+				&lt;File Id="appsettings.json" Name="appsettings.json" Source="..\src\ShoppingMall.Client\bin\Release\net8.0-windows\publish\appsettings.json" /&gt;
+			&lt;/Component&gt;
+		&lt;/ComponentGroup&gt;
+	&lt;/Fragment&gt;
+
+	&lt;Fragment&gt;
+		&lt;ComponentGroup Id="ServerComponents" Directory="INSTALLFOLDER"&gt;
+			&lt;Component Id="ServerExe" Guid="*"&gt;
+				&lt;File Id="ShoppingMall.Server.exe" Name="ShoppingMall.Server.exe" Source="..\src\ShoppingMall.Server\bin\Release\net8.0\publish\ShoppingMall.Server.exe" KeyPath="yes" /&gt;
+			&lt;/Component&gt;
+			&lt;Component Id="ServerDll" Guid="*"&gt;
+				&lt;File Id="ShoppingMall.Server.dll" Name="ShoppingMall.Server.dll" Source="..\src\ShoppingMall.Server\bin\Release\net8.0\publish\ShoppingMall.Server.dll" /&gt;
+			&lt;/Component&gt;
+		&lt;/ComponentGroup&gt;
+	&lt;/Fragment&gt;
+&lt;/Wix&gt;

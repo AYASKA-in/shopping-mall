@@ -57,6 +57,9 @@ public partial class App : Application
         var config = Services.GetRequiredService<AppConfiguration>();
         var cfg = config.Load();
 
+        var culture = cfg.Language ?? "en";
+        ShoppingMall.Client.Resources.Strings.SetCulture(culture);
+
         if (!cfg.IsConfigured)
         {
             var wizard = Services.GetRequiredService<SetupWizardViewModel>();

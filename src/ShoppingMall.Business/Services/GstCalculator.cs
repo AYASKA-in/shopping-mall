@@ -14,7 +14,10 @@ public class GstCalculator
         };
 
         if (taxRate <= 0 || taxableAmount <= 0)
+        {
+            result.GrandTotal = taxableAmount;
             return result;
+        }
 
         if (supplyType == SupplyType.IntraState)
         {
@@ -27,7 +30,7 @@ public class GstCalculator
             result.IGST = new TaxComponent { Type = TaxType.IGST, Rate = taxRate, Amount = Math.Round(taxableAmount * taxRate / 100, 2) };
         }
 
-        result.TotalTaxAmount = result.CGST?.Amount + result.SGST?.Amount + result.IGST?.Amount ?? 0;
+        result.TotalTaxAmount = (result.CGST?.Amount ?? 0) + (result.SGST?.Amount ?? 0) + (result.IGST?.Amount ?? 0);
         result.GrandTotal = taxableAmount + result.TotalTaxAmount;
         return result;
     }

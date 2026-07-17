@@ -1,22 +1,30 @@
 using System.IO;
 using System.Text;
+using ShoppingMall.Client.Printers;
 using ShoppingMall.Core.Models;
 
 namespace ShoppingMall.Client.Services;
 
 public class ThermalPrinterService
 {
-    private readonly string? _printerName;
+    private readonly string _printerName;
 
     public ThermalPrinterService()
     {
         _printerName = GetDefaultPrinter();
     }
 
+    public string PrinterName => _printerName;
+
     public async Task PrintReceiptAsync(Transaction transaction, Store store, string cashierName)
     {
         var escpos = BuildReceipt(transaction, store, cashierName);
         await PrintRawAsync(escpos);
+    }
+
+    public bool TestConnection()
+    {
+        return RawPrinterHelper.Print(_printerName, Encoding.UTF8.GetBytes("\n\nTest Print - Shopping Mall POS\n\n"));
     }
 
     private byte[] BuildReceipt(Transaction txn, Store store, string cashierName)
@@ -38,6 +46,8 @@ public class ThermalPrinterService
         WriteLine(writer, $"Invoice: {txn.ReceiptNumber}");
         WriteLine(writer, $"Date: {txn.CreatedAt:dd-MMM-yyyy HH:mm}");
         WriteLine(writer, $"Cashier: {cashierName}");
+        if (txn.Customer != null)
+            WriteLine(writer, $"Customer: {txn.Customer.FirstName} {txn.Customer.LastName}");
         WriteLine(writer, new string('-', 32));
 
         WriteLine(writer, $"{"Item",-20} {"Qty",4} {"Amt",8}");
@@ -90,31 +100,18 @@ public class ThermalPrinterService
     private static void Write(BinaryWriter w, byte[] data) => w.Write(data);
     private static void WriteLine(BinaryWriter w, string text) => w.Write(Encoding.UTF8.GetBytes(text + "\n"));
 
-    private async Task PrintRawAsync(byte[] data)
+    private Task PrintRawAsync(byte[] data)
     {
-        await Task.Run(() =>
+        return Task.Run(() =>
         {
-            try
+            if (!RawPrinterHelper.Print(_printerName, data, "Receipt"))
             {
-                using var fs = new FileStream($@"\\localhost\{_printerName}", FileMode.OpenOrCreate, FileAccess.Write);
-                fs.Write(data, 0, data.Length);
-            }
-            catch
-            {
-                try
-                {
-                    using var fs = new FileStream($@"{GetPrinterPort()}", FileMode.OpenOrCreate, FileAccess.Write);
-                    fs.Write(data, 0, data.Length);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Print failed: {ex.Message}");
-                }
+                System.Diagnostics.Debug.WriteLine($"Print failed on {_printerName}");
             }
         });
     }
 
-    private static string? GetDefaultPrinter()
+    private static string GetDefaultPrinter()
     {
         try
         {
@@ -130,34 +127,11 @@ public class ThermalPrinterService
             ps.Start();
             var output = ps.StandardOutput.ReadToEnd()?.Trim();
             ps.WaitForExit(3000);
-            return string.IsNullOrEmpty(output) ? "EPSON" : output;
+            return string.IsNullOrEmpty(output) ? "EPSON TM-T88V" : output;
         }
         catch
         {
-            return "EPSON";
-        }
-    }
-
-    private static string GetPrinterPort()
-    {
-        try
-        {
-            using var ps = new System.Diagnostics.Process();
-            ps.StartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = "-Command \"Get-CimInstance Win32_Printer | Where-Object {$_.Default -eq $true} | Select-Object -ExpandProperty PortName\"",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            ps.Start();
-            var output = ps.StandardOutput.ReadToEnd()?.Trim();
-            return string.IsNullOrEmpty(output) ? "LPT1:" : output;
-        }
-        catch
-        {
-            return "LPT1:";
+            return "EPSON TM-T88V";
         }
     }
 }

@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ShoppingMall.Client.ViewModels"
         xmlns:views="clr-namespace:ShoppingMall.Client.Views"
-        Title="Shopping Mall POS" Height="768" Width="1280"
+        xmlns:res="clr-namespace:ShoppingMall.Client.Resources"
+        Title="{x:Static res:Strings.AppTitle}" Height="768" Width="1280"
         WindowState="Maximized" WindowStyle="SingleBorderWindow"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
