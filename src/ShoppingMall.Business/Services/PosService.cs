@@ -11,6 +11,7 @@ public class PosService
     private readonly IRepository<Payment> _paymentRepo;
     private readonly IRepository<TaxBreakdown> _taxRepo;
     private readonly GstCalculator _gstCalculator;
+    private readonly InventoryService _inventoryService;
     private readonly IRepository<Customer> _customerRepo;
 
     public PosService(
@@ -20,6 +21,7 @@ public class PosService
         IRepository<Payment> paymentRepo,
         IRepository<TaxBreakdown> taxRepo,
         GstCalculator gstCalculator,
+        InventoryService inventoryService,
         IRepository<Customer> customerRepo)
     {
         _transactionRepo = transactionRepo;
@@ -28,6 +30,7 @@ public class PosService
         _paymentRepo = paymentRepo;
         _taxRepo = taxRepo;
         _gstCalculator = gstCalculator;
+        _inventoryService = inventoryService;
         _customerRepo = customerRepo;
     }
 
@@ -58,11 +61,6 @@ public class PosService
         var transaction = await _transactionRepo.GetByIdAsync(transactionId);
         if (transaction == null || transaction.Status != Core.Enums.TransactionStatus.Active)
             throw new InvalidOperationException("Transaction not found or not active");
-
-        // Idempotency — skip if line with same product already exists (prevents offline replay duplicates)
-        var existingLine = transaction.Lines.FirstOrDefault(l => l.ProductId == productId);
-        if (existingLine != null)
-            return existingLine;
 
         var unitPrice = overridePrice ?? product.SellingPrice ?? 0;
         var discountAmount = 0m;
@@ -129,6 +127,19 @@ public class PosService
 
         transaction.Status = Core.Enums.TransactionStatus.Completed;
         transaction.Payments.Add(payment);
+
+        foreach (var line in transaction.Lines)
+        {
+            try
+            {
+                await _inventoryService.DeductStockAsync(transaction.StoreId, line.ProductId,
+                    line.Quantity, "SALE", transaction.Id, line.UnitPrice);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException($"Insufficient stock for '{line.ProductName}': {ex.Message}");
+            }
+        }
 
         await _transactionRepo.UpdateAsync(transaction);
 

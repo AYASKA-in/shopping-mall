@@ -43,16 +43,16 @@ public class ProductBulkImportService
 
             if (fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                using var reader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration
+                using var csvReader = ExcelReaderFactory.CreateCsvReader(stream, new ExcelReaderConfiguration
                 {
                     FallbackEncoding = Encoding.UTF8
                 });
-                rows = ReadRows(reader).ToList();
+                rows = ReadRows(csvReader).ToList();
             }
             else
             {
-                using var reader = ExcelReaderFactory.CreateReader(stream);
-                rows = ReadRows(reader).ToList();
+                using var excelReader = ExcelReaderFactory.CreateReader(stream);
+                rows = ReadRows(excelReader).ToList();
             }
         }
         catch (Exception ex)

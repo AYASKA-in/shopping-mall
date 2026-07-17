@@ -35,5 +35,7 @@ public class CloudBackupConfiguration : IEntityTypeConfiguration<CloudBackup>
         builder.ToTable("cloud_backups");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.FileName).HasMaxLength(255).IsRequired();
+        builder.Property(x => x.EncryptionKey).HasMaxLength(512);
+        builder.Property(x => x.EncryptionIv).HasMaxLength(512);
     }
 }

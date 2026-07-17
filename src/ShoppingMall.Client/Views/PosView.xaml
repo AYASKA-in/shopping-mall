@@ -54,7 +54,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
                         <Button Content="Suspend" Command="{Binding SuspendCommand}"
                                 Background="#F59E0B" Foreground="White" Padding="15,10" BorderThickness="0" Margin="0,0,10,0" Height="40"/>
-                        <Button Content="Pay Cash" Command="{Binding PayCashCommand}"
+                        <Button Content="Pay Cash" Command="{Binding PayCommand}"
                                 Background="#059669" Foreground="White" Padding="15,10" BorderThickness="0" Height="40"/>
                     </StackPanel>
                 </Grid>

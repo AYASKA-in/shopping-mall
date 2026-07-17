@@ -124,7 +124,7 @@ public class BackgroundSyncService : IDisposable
                 }
                 catch
                 {
-                    break;
+                    continue;
                 }
             }
 

@@ -131,8 +131,11 @@ public class CartLineItem : ObservableObject
     }
 
     public decimal LineTotal => Math.Round(Quantity * UnitPrice, 2);
-    public decimal TaxAmount => Math.Round((LineTotal - DiscountAmount) * TaxRate / 100, 2);
-    public decimal NetAmount => LineTotal - DiscountAmount + TaxAmount;
+    public decimal TaxableAmount => LineTotal - DiscountAmount;
+    public decimal TaxAmount => Math.Round(TaxableAmount * TaxRate / 100, 2);
+    public decimal CgstAmount => Math.Round(TaxAmount / 2, 2);
+    public decimal SgstAmount => Math.Round(TaxAmount / 2, 2);
+    public decimal NetAmount => TaxableAmount + TaxAmount;
 }
 
 public class ObservableObject : System.ComponentModel.INotifyPropertyChanged

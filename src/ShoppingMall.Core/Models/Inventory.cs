@@ -111,7 +111,7 @@ public class InterStoreTransfer
     public string TransferNumber { get; set; } = string.Empty;
     public Guid FromStoreId { get; set; }
     public Guid ToStoreId { get; set; }
-    public string Status { get; set; } = "Draft";
+    public TransferStatus Status { get; set; } = TransferStatus.Draft;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ShippedAt { get; set; }
     public DateTime? ReceivedAt { get; set; }

@@ -75,6 +75,8 @@ public class CloudBackupService
             FileSizeBytes = encrypted.Length,
             Checksum = checksum,
             StorageUrl = storageUrl,
+            EncryptionKey = Convert.ToHexString(key),
+            EncryptionIv = Convert.ToHexString(iv),
             CreatedAt = DateTime.UtcNow
         };
 

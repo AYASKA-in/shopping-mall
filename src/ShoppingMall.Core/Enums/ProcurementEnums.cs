@@ -57,3 +57,11 @@ public enum DebitNoteStatus
     Cancelled,
     Rejected
 }
+
+public enum TransferStatus
+{
+    Draft,
+    Shipped,
+    Received,
+    Cancelled
+}

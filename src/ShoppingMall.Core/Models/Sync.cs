@@ -36,5 +36,7 @@ public class CloudBackup
     public long FileSizeBytes { get; set; }
     public string? Checksum { get; set; }
     public string? StorageUrl { get; set; }
+    public string? EncryptionKey { get; set; }
+    public string? EncryptionIv { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

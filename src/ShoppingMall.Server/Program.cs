@@ -18,6 +18,7 @@ builder.Host.UseWindowsService(options =>
 builder.Services.AddDataLayer(builder.Configuration);
 builder.Services.AddBusinessLayer();
 builder.Services.AddHostedService<CloudSyncService>();
+builder.Services.AddHostedService<SessionCleanupService>();
 builder.Services.AddScoped<CloudBackupService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

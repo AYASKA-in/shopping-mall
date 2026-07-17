@@ -12,6 +12,7 @@ public class PosViewModel : BaseViewModel
     private readonly CartService _cart;
     private readonly ThermalPrinterService _printer;
     private readonly Offline.OfflineCache _offline;
+    private readonly Hardware.ScaleReader _scale;
     private ClientConfig _cfg = new();
 
     private Transaction? _currentTransaction;
@@ -44,7 +45,36 @@ public class PosViewModel : BaseViewModel
     public string SelectedPayment
     {
         get => _selectedPayment;
-        set => SetProperty(ref _selectedPayment, value);
+        set
+        {
+            SetProperty(ref _selectedPayment, value);
+            OnPropertyChanged(nameof(IsUpiPayment));
+            if (value == "UPI")
+                _ = GenerateUpiQrAsync();
+        }
+    }
+
+    public bool IsUpiPayment => SelectedPayment == "UPI";
+
+    private string _upiQrIntent = "";
+    public string UpiQrIntent
+    {
+        get => _upiQrIntent;
+        set => SetProperty(ref _upiQrIntent, value);
+    }
+
+    private decimal _scaleWeight;
+    public decimal ScaleWeight
+    {
+        get => _scaleWeight;
+        set => SetProperty(ref _scaleWeight, value);
+    }
+
+    private string _scaleStatus = "Not connected";
+    public string ScaleStatus
+    {
+        get => _scaleStatus;
+        set => SetProperty(ref _scaleStatus, value);
     }
 
     private decimal _tenderedAmount;
@@ -146,14 +176,18 @@ public class PosViewModel : BaseViewModel
     public ICommand ReprintCommand { get; }
     public ICommand ApplyCouponCommand { get; }
     public ICommand LookupLoyaltyCommand { get; }
+    public ICommand ConnectScaleCommand { get; }
+    public ICommand CaptureWeightCommand { get; }
+    public ICommand TareScaleCommand { get; }
 
-    public PosViewModel(ApiClient api, AppConfiguration config, CartService cart, ThermalPrinterService printer, Offline.OfflineCache offline)
+    public PosViewModel(ApiClient api, AppConfiguration config, CartService cart, ThermalPrinterService printer, Offline.OfflineCache offline, Hardware.ScaleReader scale)
     {
         _api = api;
         _config = config;
         _cart = cart;
         _printer = printer;
         _offline = offline;
+        _scale = scale;
 
         _cfg = _config.Load();
         _cart.Lines.CollectionChanged += (_, _) => RefreshTotals();
@@ -171,6 +205,17 @@ public class PosViewModel : BaseViewModel
         ReprintCommand = new RelayCommand(async _ => await ReprintLastReceiptAsync());
         ApplyCouponCommand = new RelayCommand(async _ => await ApplyCouponAsync());
         LookupLoyaltyCommand = new RelayCommand(async _ => await LookupLoyaltyAsync());
+        ConnectScaleCommand = new RelayCommand(async _ => await ConnectScaleAsync());
+        CaptureWeightCommand = new RelayCommand(async _ => CaptureWeightFromScale());
+        TareScaleCommand = new RelayCommand(_ => _scale.SendTareCommand());
+
+        _scale.WeightReceived += (_, weight) =>
+        {
+            ScaleWeight = weight;
+            ScaleStatus = $"{weight:F3} kg";
+            CaptureWeightFromScale();
+        };
+        _scale.ErrorOccurred += (_, msg) => ScaleStatus = $"Error: {msg}";
     }
 
     public async Task CreateNewTransactionAsync()
@@ -504,6 +549,59 @@ public class PosViewModel : BaseViewModel
         }
     }
 
+    private async Task ConnectScaleAsync()
+    {
+        var ports = _scale.GetAvailablePorts();
+        if (ports.Length == 0)
+        {
+            ScaleStatus = "No COM ports found";
+            return;
+        }
+
+        var connected = _scale.Connect(ports[0]);
+        ScaleStatus = connected ? $"Connected to {ports[0]}" : "Connection failed";
+        if (connected)
+            await Task.Delay(100);
+    }
+
+    private void CaptureWeightFromScale()
+    {
+        if (ScaleWeight <= 0) return;
+
+        var weighableItem = CartItems.FirstOrDefault(i => i.IsWeighable && i.Quantity == 0);
+        if (weighableItem != null)
+        {
+            weighableItem.WeightKg = ScaleWeight;
+            _cart.UpdateQuantity(weighableItem, ScaleWeight);
+            StatusText = $"Weight: {ScaleWeight:F3} kg for {weighableItem.ProductName}";
+            ScaleWeight = 0;
+        }
+    }
+
+    private async Task GenerateUpiQrAsync()
+    {
+        if (CurrentTransaction == null || GrandTotal <= 0) return;
+
+        try
+        {
+            var cfg = _config.Load();
+            var response = await _api.HttpPostAsync<UpiQrResponse>("/api/upi/qr/dynamic", new
+            {
+                Amount = GrandTotal,
+                TransactionRef = CurrentTransaction.ReceiptNumber,
+                StoreName = "Shopping Mart"
+            });
+
+            UpiQrIntent = response?.Intent ?? "";
+            if (!string.IsNullOrEmpty(UpiQrIntent))
+                StatusText = "UPI QR ready — scan to pay";
+        }
+        catch
+        {
+            StatusText = "UPI QR generation failed";
+        }
+    }
+
     private void RefreshTotals()
     {
         OnPropertyChanged(nameof(SubTotal));
@@ -514,3 +612,5 @@ public class PosViewModel : BaseViewModel
         OnPropertyChanged(nameof(CartItems));
     }
 }
+
+public record UpiQrResponse(string Intent, decimal Amount, string TransactionRef);

@@ -155,6 +155,19 @@ public class PromotionEngine
             CouponCodeId = couponCodeId,
             UsedAt = DateTime.UtcNow
         });
+
+        if (couponCodeId.HasValue)
+        {
+            var coupon = await _couponRepo.GetByIdAsync(couponCodeId.Value);
+            if (coupon != null)
+            {
+                coupon.UseCount++;
+                coupon.UsedAt = DateTime.UtcNow;
+                if (coupon.Campaign.MaxUses > 0 && coupon.UseCount >= coupon.Campaign.MaxUses)
+                    coupon.Status = Core.Enums.CouponStatus.Used;
+                await _couponRepo.UpdateAsync(coupon);
+            }
+        }
     }
 
     private bool EvaluateRules(ICollection<PromotionRuleGroup> ruleGroups, CartContext cart)

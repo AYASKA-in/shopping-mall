@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ShoppingMall.Client.Hardware;
 using ShoppingMall.Client.Services;
 using ShoppingMall.Client.ViewModels;
 using ShoppingMall.Client.Views;
@@ -27,6 +28,7 @@ public partial class App : Application
         services.AddSingleton<CartService>();
         services.AddSingleton<ThermalPrinterService>();
         services.AddSingleton<BackgroundSyncService>();
+        services.AddSingleton<ScaleReader>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<PosViewModel>();
@@ -35,6 +37,7 @@ public partial class App : Application
         services.AddTransient<CustomerViewModel>();
         services.AddTransient<ReportsViewModel>();
         services.AddTransient<AdminViewModel>();
+        services.AddTransient<InventoryViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<MainWindow>();
         services.AddTransient<Views.ProductListView>();
@@ -42,6 +45,7 @@ public partial class App : Application
         services.AddTransient<Views.CustomerView>();
         services.AddTransient<Views.ReportsView>();
         services.AddTransient<Views.AdminView>();
+        services.AddTransient<Views.InventoryView>();
 
         Services = services.BuildServiceProvider();
     }

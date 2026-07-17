@@ -64,5 +64,7 @@
                            Visibility="{Binding IsReportsView, Converter={StaticResource BoolToVis}}"/>
         <views:AdminView Grid.Row="1" DataContext="{Binding AdminVM}"
                          Visibility="{Binding IsAdminView, Converter={StaticResource BoolToVis}}"/>
+        <views:InventoryView Grid.Row="1" DataContext="{Binding InventoryVM}"
+                             Visibility="{Binding IsInventoryView, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </Window>

@@ -1,3 +1,4 @@
+using ShoppingMall.Core.Enums;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
 
@@ -23,7 +24,7 @@ public class InterStoreTransferService
         List<CreateTransferLine> lines, string? notes = null)
     {
         var date = DateTime.UtcNow;
-        var number = $"TFR-{fromStoreId:N[..4]}-{date:yyyyMMdd}-{Guid.NewGuid():N[..4]}";
+        var number = $"TFR-{fromStoreId.ToString("N")[..4]}-{date:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4]}";
 
         var transfer = new InterStoreTransfer
         {
@@ -31,7 +32,7 @@ public class InterStoreTransferService
             TransferNumber = number,
             FromStoreId = fromStoreId,
             ToStoreId = toStoreId,
-            Status = "Draft",
+            Status = TransferStatus.Draft,
             Notes = notes,
             CreatedByUserId = createdByUserId,
             CreatedAt = date
@@ -56,7 +57,7 @@ public class InterStoreTransferService
         var transfer = await _transferRepo.GetByIdAsync(transferId);
         if (transfer == null) return null;
 
-        if (transfer.Status != "Draft" && transfer.Status != "Shipped")
+        if (transfer.Status != TransferStatus.Draft && transfer.Status != TransferStatus.Shipped)
             throw new InvalidOperationException($"Cannot ship transfer with status '{transfer.Status}'");
 
         if (transfer.Lines == null || transfer.Lines.Count == 0)
@@ -76,7 +77,7 @@ public class InterStoreTransferService
             line.ShippedQty = shipQty;
         }
 
-        transfer.Status = "Shipped";
+        transfer.Status = TransferStatus.Shipped;
         transfer.ShippedAt = DateTime.UtcNow;
         await _transferRepo.UpdateAsync(transfer);
         return transfer;
@@ -87,7 +88,7 @@ public class InterStoreTransferService
         var transfer = await _transferRepo.GetByIdAsync(transferId);
         if (transfer == null) return null;
 
-        if (transfer.Status != "Shipped")
+        if (transfer.Status != TransferStatus.Shipped)
             throw new InvalidOperationException($"Cannot receive transfer with status '{transfer.Status}'");
 
         if (transfer.Lines == null || transfer.Lines.Count == 0)
@@ -107,7 +108,7 @@ public class InterStoreTransferService
             line.ReceivedQty = receiveQty;
         }
 
-        transfer.Status = "Received";
+        transfer.Status = TransferStatus.Received;
         transfer.ReceivedAt = DateTime.UtcNow;
         await _transferRepo.UpdateAsync(transfer);
         return transfer;
@@ -118,10 +119,10 @@ public class InterStoreTransferService
         var transfer = await _transferRepo.GetByIdAsync(transferId);
         if (transfer == null) return null;
 
-        if (transfer.Status == "Received" || transfer.Status == "Cancelled")
+        if (transfer.Status == TransferStatus.Received || transfer.Status == TransferStatus.Cancelled)
             throw new InvalidOperationException($"Cannot cancel transfer with status '{transfer.Status}'");
 
-        if (transfer.Status == "Shipped")
+        if (transfer.Status == TransferStatus.Shipped)
         {
             if (transfer.Lines == null || transfer.Lines.Count == 0)
             {
@@ -139,7 +140,7 @@ public class InterStoreTransferService
             }
         }
 
-        transfer.Status = "Cancelled";
+        transfer.Status = TransferStatus.Cancelled;
         await _transferRepo.UpdateAsync(transfer);
         return transfer;
     }

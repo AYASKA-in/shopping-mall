@@ -19,9 +19,23 @@ public class PurchaseOrderService
 
     public async Task<PurchaseOrder> CreateAsync(PurchaseOrder po)
     {
+        if (po.Lines == null || po.Lines.Count == 0)
+            throw new InvalidOperationException("Purchase order must have at least one line");
+
         po.Id = Guid.NewGuid();
+        po.PONumber = $"PO-{po.StoreId.ToString("N")[..4]}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4]}";
         po.Status = POStatus.Draft;
+        po.SubTotal = po.Lines.Sum(l => l.OrderedQty * l.UnitPrice);
+        po.TaxAmount = po.Lines.Sum(l => l.NetAmount * l.TaxRate / 100);
+        po.GrandTotal = po.SubTotal - po.DiscountAmount + po.TaxAmount;
         po.CreatedAt = DateTime.UtcNow;
+
+        foreach (var line in po.Lines)
+        {
+            line.Id = Guid.NewGuid();
+            line.POId = po.Id;
+        }
+
         return await _poRepo.AddAsync(po);
     }
 

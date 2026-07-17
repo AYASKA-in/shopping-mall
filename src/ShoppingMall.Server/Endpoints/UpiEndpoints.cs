@@ -40,7 +40,7 @@ public static class UpiEndpoints
             return Results.Ok(new { isValid });
         });
 
-        group.MapPost("/webhook", async (HttpContext context, UpiPaymentService upi) =>
+        group.MapPost("/webhook", async (HttpContext context, UpiPaymentService upi, IRepository<Payment> paymentRepo, ITransactionRepository txnRepo) =>
         {
             using var reader = new StreamReader(context.Request.Body);
             var payload = await reader.ReadToEndAsync();
@@ -50,6 +50,41 @@ public static class UpiEndpoints
             var isValid = upi.VerifyPaymentWebhook(payload, signature, webhookSecret);
             if (!isValid)
                 return Results.Unauthorized();
+
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(payload);
+                var root = doc.RootElement;
+                var @event = root.GetProperty("event").GetString();
+
+                if (@event == "payment.captured" || @event == "order.paid")
+                {
+                    var paymentEntity = root.GetProperty("payload").GetProperty("payment").GetProperty("entity");
+                    var razorpayPaymentId = paymentEntity.GetProperty("id").GetString() ?? "";
+                    var razorpayOrderId = paymentEntity.GetProperty("order_id").GetString() ?? "";
+                    var status = paymentEntity.GetProperty("status").GetString() ?? "";
+                    var amountPaise = paymentEntity.GetProperty("amount").GetInt64();
+
+                    var payments = await paymentRepo.FindAsync(p =>
+                        p.GatewayResponse != null && p.GatewayResponse.Contains(razorpayOrderId));
+                    var payment = payments.FirstOrDefault();
+
+                    if (payment != null)
+                    {
+                        payment.Status = status == "captured" ? Core.Enums.PaymentStatus.Captured
+                            : status == "refunded" ? Core.Enums.PaymentStatus.Refunded
+                            : payment.Status;
+                        payment.ReferenceNumber = razorpayPaymentId;
+                        payment.SettledAt = DateTime.UtcNow;
+                        await paymentRepo.UpdateAsync(payment);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var logger = context.RequestServices.GetRequiredService<ILogger<UpiPaymentService>>();
+                logger.LogWarning(ex, "Failed to process UPI webhook");
+            }
 
             return Results.Ok(new { status = "received" });
         });
