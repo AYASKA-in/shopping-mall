@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ShoppingMall.Client.Services;
 using ShoppingMall.Client.ViewModels;
+using ShoppingMall.Client.Views;
 using System.Windows;
 
 namespace ShoppingMall.Client;
@@ -24,6 +25,7 @@ public partial class App : Application
         services.AddHttpClient<ApiClient>();
         services.AddSingleton<Offline.OfflineCache>();
         services.AddTransient<LoginViewModel>();
+        services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<PosViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<MainWindow>();
@@ -34,6 +36,39 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        var config = Services.GetRequiredService<AppConfiguration>();
+        var cfg = config.Load();
+
+        if (!cfg.IsConfigured)
+        {
+            var wizard = Services.GetRequiredService<SetupWizardViewModel>();
+            var window = new Window
+            {
+                Title = "Shopping Mall POS - Setup",
+                Width = 560,
+                Height = 520,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Content = new SetupWizardView { DataContext = wizard }
+            };
+
+            wizard.SetupCompleted += (_, _) =>
+            {
+                window.Close();
+                OpenMainWindow();
+            };
+
+            window.ShowDialog();
+        }
+        else
+        {
+            OpenMainWindow();
+        }
+    }
+
+    private void OpenMainWindow()
+    {
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
     }

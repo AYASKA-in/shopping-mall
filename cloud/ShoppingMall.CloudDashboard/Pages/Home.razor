@@ -1,7 +1,152 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="mb-4">
+    <h2 class="fw-bold" style="color: #111827;">Chain-Wide Dashboard</h2>
+    <p style="color: #6b7280;">Real-time overview of all stores</p>
+</div>
 
-Welcome to your new app.
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <small style="color: #6b7280;">Total Sales (Today)</small>
+            <h3 class="fw-bold mt-1 mb-0" style="color: #059669;">₹@TotalSales.ToString("N2")</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <small style="color: #6b7280;">Transactions</small>
+            <h3 class="fw-bold mt-1 mb-0" style="color: #1a56db;">@TotalTransactions</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <small style="color: #6b7280;">Stores Active</small>
+            <h3 class="fw-bold mt-1 mb-0" style="color: #1a56db;">2 / 2</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <small style="color: #6b7280;">Low Stock Alerts</small>
+            <h3 class="fw-bold mt-1 mb-0" style="color: #dc2626;">5</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <h5 class="fw-bold mb-3" style="color: #111827;">Sales by Store (Today)</h5>
+            <table class="table">
+                <thead>
+                    <tr style="color: #6b7280;">
+                        <th>Store</th>
+                        <th>Sales</th>
+                        <th>Transactions</th>
+                        <th>Tax</th>
+                        <th>Discounts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var store in StoreSales)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@store.Name</td>
+                            <td>₹@store.Sales.ToString("N2")</td>
+                            <td>@store.Transactions</td>
+                            <td>₹@store.Tax.ToString("N2")</td>
+                            <td>₹@store.Discounts.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="background: white;">
+            <h5 class="fw-bold mb-3" style="color: #111827;">Payment Methods</h5>
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Cash</span>
+                    <span class="fw-semibold">₹45,230</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" style="width: 45%; background: #059669;"></div>
+                </div>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Card</span>
+                    <span class="fw-semibold">₹32,150</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" style="width: 32%; background: #1a56db;"></div>
+                </div>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>UPI</span>
+                    <span class="fw-semibold">₹23,620</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar" style="width: 23%; background: #f59e0b;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm p-3" style="background: white;">
+    <h5 class="fw-bold mb-3" style="color: #111827;">Low Stock Alerts</h5>
+    <table class="table">
+        <thead>
+            <tr style="color: #6b7280;">
+                <th>Store</th>
+                <th>Product</th>
+                <th>Current Stock</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Mumbai - Andheri</td>
+                <td>Amul Butter 500g</td>
+                <td>3</td>
+                <td><span class="badge bg-danger">Low</span></td>
+            </tr>
+            <tr>
+                <td>Mumbai - Andheri</td>
+                <td>Fortune Oil 1L</td>
+                <td>5</td>
+                <td><span class="badge bg-warning text-dark">Low</span></td>
+            </tr>
+            <tr>
+                <td>Pune - KP</td>
+                <td>Britannia Milk 1L</td>
+                <td>0</td>
+                <td><span class="badge bg-danger">Out of Stock</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private decimal TotalSales = 100_000m;
+    private int TotalTransactions = 245;
+
+    private List<StoreSalesData> StoreSales = new()
+    {
+        new() { Name = "Mumbai - Andheri", Sales = 58_230m, Transactions = 142, Tax = 6_987m, Discounts = 1_234m },
+        new() { Name = "Pune - KP", Sales = 41_770m, Transactions = 103, Tax = 5_012m, Discounts = 876m }
+    };
+
+    private class StoreSalesData
+    {
+        public string Name { get; set; } = "";
+        public decimal Sales { get; set; }
+        public int Transactions { get; set; }
+        public decimal Tax { get; set; }
+        public decimal Discounts { get; set; }
+    }
+}

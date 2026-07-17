@@ -1,10 +1,18 @@
 using ShoppingMall.Data;
+using ShoppingMall.Data.DbContext;
+using ShoppingMall.Data.Seed;
 using ShoppingMall.Business;
 using ShoppingMall.Server.Endpoints;
 using ShoppingMall.Server.Middleware;
 using ShoppingMall.Server.BackgroundServices;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseWindowsService(options =>
+{
+    options.ServiceName = "ShoppingMallServer";
+});
 
 builder.Services.AddDataLayer(builder.Configuration);
 builder.Services.AddBusinessLayer();
@@ -24,6 +32,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ShoppingMallDbContext>();
+    await db.Database.MigrateAsync();
+    await DbInitializer.InitializeAsync(db);
+}
 
 app.UseCors();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

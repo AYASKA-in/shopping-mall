@@ -37,4 +37,5 @@ public class ClientConfig
     public Guid StoreId { get; set; }
     public string TerminalName { get; set; } = "POS-1";
     public bool AutoConnect { get; set; } = true;
+    public bool IsConfigured { get; set; }
 }

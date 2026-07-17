@@ -1,39 +1,45 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">ShoppingMall.CloudDashboard</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+﻿<nav class="d-flex flex-column" style="width: 260px; min-height: 100vh; background: #1a56db; color: white;">
+    <div class="p-3" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+        <h4 class="mb-0 fw-bold">Shopping Mall</h4>
+        <small>Cloud Dashboard</small>
     </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+    <div class="p-3">
+        <div class="mb-2">
+            <NavLink class="nav-link d-block px-3 py-2 rounded text-white" href="" Match="NavLinkMatch.All"
+                     style="text-decoration: none;">
+                Dashboard
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+        <div class="mb-2">
+            <NavLink class="nav-link d-block px-3 py-2 rounded text-white" href="stores"
+                     style="text-decoration: none;">
+                Stores
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+        <div class="mb-2">
+            <NavLink class="nav-link d-block px-3 py-2 rounded text-white" href="reports"
+                     style="text-decoration: none;">
+                Reports
             </NavLink>
         </div>
-    </nav>
-</div>
+        <div class="mb-2">
+            <NavLink class="nav-link d-block px-3 py-2 rounded text-white" href="backups"
+                     style="text-decoration: none;">
+                Backups
+            </NavLink>
+        </div>
+    </div>
+    <div class="mt-auto p-3" style="border-top: 1px solid rgba(255,255,255,0.2);">
+        <small>&copy; 2026 Shopping Mall Systems</small>
+    </div>
+</nav>
 
-@code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
+<style>
+    .nav-link:hover {
+        background: rgba(255,255,255,0.15) !important;
     }
-}
+    .nav-link.active {
+        background: rgba(255,255,255,0.25) !important;
+        font-weight: 600;
+    }
+</style>

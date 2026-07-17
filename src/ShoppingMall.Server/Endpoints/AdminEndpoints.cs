@@ -6,6 +6,32 @@ public static class AdminEndpoints
     {
         var group = app.MapGroup("/api/admin").WithTags("Admin");
 
+        group.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+        group.MapPost("/terminals/register", async (RegisterTerminalRequest request,
+            IRepository<Store> storeRepo, IRepository<Terminal> termRepo) =>
+        {
+            var stores = await storeRepo.FindAsync(s => s.Code == request.StoreCode && s.IsActive);
+            var store = stores.FirstOrDefault();
+            if (store is null) return Results.NotFound("Store not found");
+
+            var terminal = new Terminal
+            {
+                Id = Guid.NewGuid(),
+                StoreId = store.Id,
+                Name = request.Name,
+                DeviceId = Guid.NewGuid().ToString(),
+                Mode = TerminalMode.Client,
+                IsActive = true,
+                LastHeartbeat = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+            await termRepo.AddAsync(terminal);
+
+            return Results.Ok(new TerminalRegistrationResponse(
+                terminal.Id, terminal.StoreId, terminal.Name, store.Name));
+        });
+
         group.MapGet("/stores", async (IRepository<Store> repo) =>
             Results.Ok(await repo.GetAllAsync()));
 
@@ -84,3 +110,6 @@ public static class AdminEndpoints
         });
     }
 }
+
+public record RegisterTerminalRequest(string StoreCode, string Name);
+public record TerminalRegistrationResponse(Guid Id, Guid StoreId, string Name, string StoreName);
