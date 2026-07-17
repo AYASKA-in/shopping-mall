@@ -1,0 +1,106 @@
+<UserControl x:Class="ShoppingMall.Client.Views.PosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Margin="0,0,10,0" Padding="10" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="16" FontWeight="SemiBold" Foreground="#111827"/>
+                        <Button Grid.Column="1" Content="New Sale" Command="{Binding NewTransactionCommand}"
+                                Background="#1A56DB" Foreground="White" Padding="15,8" BorderThickness="0" Height="40"/>
+                    </Grid>
+                </Border>
+
+                <ListView Grid.Row="1" ItemsSource="{Binding CartItems}" Margin="0,10">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Item" Width="200" DisplayMemberBinding="{Binding ProductName}"/>
+                            <GridViewColumn Header="Qty" Width="60" DisplayMemberBinding="{Binding Quantity}"/>
+                            <GridViewColumn Header="Price" Width="80" DisplayMemberBinding="{Binding UnitPrice, StringFormat=₹{0:F2}}"/>
+                            <GridViewColumn Header="Discount" Width="80" DisplayMemberBinding="{Binding DiscountAmount, StringFormat=₹{0:F2}}"/>
+                            <GridViewColumn Header="Total" Width="100" DisplayMemberBinding="{Binding NetAmount, StringFormat=₹{0:F2}}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <Grid Grid.Row="2" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" TextAlignment="Right" FontSize="24" FontWeight="Bold" Foreground="#111827">
+                        <Run Text="Total: "/>
+                        <Run Text="{Binding TotalAmount, StringFormat=₹{0:F2}}" Foreground="#059669"/>
+                    </TextBlock>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
+                        <Button Content="Suspend" Command="{Binding SuspendCommand}"
+                                Background="#F59E0B" Foreground="White" Padding="15,10" BorderThickness="0" Margin="0,0,10,0" Height="40"/>
+                        <Button Content="Pay Cash" Command="{Binding PayCashCommand}"
+                                Background="#059669" Foreground="White" Padding="15,10" BorderThickness="0" Height="40"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Padding="10" Background="White">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Scan Barcode" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                <TextBox Grid.Row="1" Text="{Binding BarcodeInput, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="20" Padding="10,15" Margin="0,5,0,15"
+                         BorderBrush="#D1D5DB" BorderThickness="2"/>
+
+                <Border Grid.Row="2" BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Quick Actions" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                        <WrapPanel Margin="0,10,0,0">
+                            <Button Content="₹100" Width="80" Height="60" Margin="0,0,5,5" Background="#E5E7EB" BorderThickness="0"/>
+                            <Button Content="₹200" Width="80" Height="60" Margin="0,0,5,5" Background="#E5E7EB" BorderThickness="0"/>
+                            <Button Content="₹500" Width="80" Height="60" Margin="0,0,5,5" Background="#E5E7EB" BorderThickness="0"/>
+                            <Button Content="₹2000" Width="80" Height="60" Margin="0,0,5,5" Background="#E5E7EB" BorderThickness="0"/>
+                            <Button Content="Card" Width="80" Height="60" Background="#E5E7EB" BorderThickness="0"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="3" Margin="0,15,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Tendered" FontSize="12" Foreground="#6B7280"/>
+                    <TextBox Grid.Row="1" Text="{Binding TenderedAmount, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="18" Padding="10" Margin="0,2,0,10" BorderBrush="#D1D5DB" BorderThickness="1"/>
+                    <TextBlock Grid.Row="2" FontSize="14">
+                        <Run Text="Change: "/>
+                        <Run Text="{Binding ChangeAmount, StringFormat=₹{0:F2}}" Foreground="#059669" FontWeight="Bold"/>
+                    </TextBlock>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

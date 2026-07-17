@@ -1,0 +1,46 @@
+using ShoppingMall.Data;
+using ShoppingMall.Business;
+using ShoppingMall.Server.Endpoints;
+using ShoppingMall.Server.Middleware;
+using ShoppingMall.Server.BackgroundServices;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDataLayer(builder.Configuration);
+builder.Services.AddBusinessLayer();
+builder.Services.AddHostedService<CloudSyncService>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Shopping Mall API", Version = "v1" });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();
+
+app.UseCors();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.MapAuthEndpoints();
+app.MapPosEndpoints();
+app.MapProductEndpoints();
+app.MapInventoryEndpoints();
+app.MapProcurementEndpoints();
+app.MapReportEndpoints();
+app.MapSyncEndpoints();
+app.MapAdminEndpoints();
+
+app.Run();

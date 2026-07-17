@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{629403DD-C972-46C1-8658-CD7959BE5E5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.Core", "src\ShoppingMall.Core\ShoppingMall.Core.csproj", "{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.Data", "src\ShoppingMall.Data\ShoppingMall.Data.csproj", "{070C82AF-D27D-47C2-B8D2-5E2E770E29F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.Business", "src\ShoppingMall.Business\ShoppingMall.Business.csproj", "{B29EB939-9587-4260-A020-5E671A5CB17C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.Server", "src\ShoppingMall.Server\ShoppingMall.Server.csproj", "{4B83CA6C-10A7-401E-8946-DBB567B40FD2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.Client", "src\ShoppingMall.Client\ShoppingMall.Client.csproj", "{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cloud", "cloud", "{CAA6C0C6-3E45-4591-B7D4-ACD7C13DDCAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoppingMall.CloudDashboard", "cloud\ShoppingMall.CloudDashboard\ShoppingMall.CloudDashboard.csproj", "{3C5A5CF0-F8F2-42B3-B731-48B888234A0D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{070C82AF-D27D-47C2-B8D2-5E2E770E29F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{070C82AF-D27D-47C2-B8D2-5E2E770E29F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{070C82AF-D27D-47C2-B8D2-5E2E770E29F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{070C82AF-D27D-47C2-B8D2-5E2E770E29F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B29EB939-9587-4260-A020-5E671A5CB17C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B29EB939-9587-4260-A020-5E671A5CB17C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B29EB939-9587-4260-A020-5E671A5CB17C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B29EB939-9587-4260-A020-5E671A5CB17C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B83CA6C-10A7-401E-8946-DBB567B40FD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B83CA6C-10A7-401E-8946-DBB567B40FD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B83CA6C-10A7-401E-8946-DBB567B40FD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B83CA6C-10A7-401E-8946-DBB567B40FD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C5A5CF0-F8F2-42B3-B731-48B888234A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C5A5CF0-F8F2-42B3-B731-48B888234A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C5A5CF0-F8F2-42B3-B731-48B888234A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C5A5CF0-F8F2-42B3-B731-48B888234A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9169BAF3-DA84-48F7-9A96-CCFEEAD16DC9} = {629403DD-C972-46C1-8658-CD7959BE5E5A}
+		{070C82AF-D27D-47C2-B8D2-5E2E770E29F7} = {629403DD-C972-46C1-8658-CD7959BE5E5A}
+		{B29EB939-9587-4260-A020-5E671A5CB17C} = {629403DD-C972-46C1-8658-CD7959BE5E5A}
+		{4B83CA6C-10A7-401E-8946-DBB567B40FD2} = {629403DD-C972-46C1-8658-CD7959BE5E5A}
+		{D9B8E7F1-C8DE-4728-8B73-C21AF89A51BD} = {629403DD-C972-46C1-8658-CD7959BE5E5A}
+		{3C5A5CF0-F8F2-42B3-B731-48B888234A0D} = {CAA6C0C6-3E45-4591-B7D4-ACD7C13DDCAD}
+	EndGlobalSection
+EndGlobal
