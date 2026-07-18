@@ -95,6 +95,7 @@ public class MainViewModel : BaseViewModel
         LogoutCommand = new AsyncRelayCommand(async _ =>
         {
             _api.ClearSessionId();
+            LoginVM.Reset();
             CurrentView = AppView.Login;
             await Task.CompletedTask;
         });

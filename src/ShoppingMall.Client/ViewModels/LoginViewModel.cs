@@ -76,4 +76,12 @@ public class LoginViewModel : BaseViewModel
             IsLoading = false;
         }
     }
+
+    public void Reset()
+    {
+        Username = "";
+        Pin = "";
+        ErrorMessage = "";
+        IsLoading = false;
+    }
 }
