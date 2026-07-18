@@ -9,6 +9,7 @@ public partial class LoginView : UserControl
     public LoginView()
     {
         InitializeComponent();
+        Loaded += (_, _) => UsernameBox.Focus();
         PinBox.PasswordChanged += (s, e) =>
         {
             if (DataContext is LoginViewModel vm)
