@@ -54,7 +54,8 @@
             </Grid>
         </Border>
 
-        <views:LoginView Grid.Row="1" Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}}"/>
+        <views:LoginView Grid.Row="1" DataContext="{Binding LoginVM}"
+                         Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}}"/>
         <views:PosView Grid.Row="1" DataContext="{Binding PosVM}" 
                        Visibility="{Binding IsPosView, Converter={StaticResource BoolToVis}}"/>
         <views:ProductListView Grid.Row="1" DataContext="{Binding ProductListVM}"

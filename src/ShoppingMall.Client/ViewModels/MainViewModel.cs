@@ -57,6 +57,7 @@ public class MainViewModel : BaseViewModel
     public ReportsViewModel ReportsVM { get; }
     public AdminViewModel AdminVM { get; }
     public InventoryViewModel InventoryVM { get; }
+    public LoginViewModel LoginVM { get; }
 
     public ICommand NavigateToPosCommand { get; }
     public ICommand NavigateToInventoryCommand { get; }
@@ -70,7 +71,7 @@ public class MainViewModel : BaseViewModel
     public MainViewModel(ApiClient api, AppConfiguration config, PosViewModel posVM,
         ProductListViewModel productListVM, SupplierListViewModel supplierListVM,
         CustomerViewModel customerVM, ReportsViewModel reportsVM, AdminViewModel adminVM,
-        InventoryViewModel inventoryVM)
+        InventoryViewModel inventoryVM, LoginViewModel loginVM)
     {
         _api = api;
         _config = config;
@@ -81,6 +82,8 @@ public class MainViewModel : BaseViewModel
         ReportsVM = reportsVM;
         AdminVM = adminVM;
         InventoryVM = inventoryVM;
+        LoginVM = loginVM;
+        LoginVM.LoginSucceeded += (_, result) => OnLoginSucceeded(result);
 
         NavigateToPosCommand = new RelayCommand(_ => CurrentView = AppView.Pos);
         NavigateToInventoryCommand = new RelayCommand(_ => CurrentView = AppView.Inventory);
