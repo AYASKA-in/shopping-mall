@@ -23,6 +23,7 @@ public class SetupWizardViewModel : BaseViewModel
             OnPropertyChanged(nameof(IsStepTerminal));
             OnPropertyChanged(nameof(IsStepConfirm));
             OnPropertyChanged(nameof(StepTitle));
+            OnPropertyChanged(nameof(StepProgress));
             OnPropertyChanged(nameof(NextButtonText));
             OnPropertyChanged(nameof(IsBackVisible));
         }
@@ -43,6 +44,7 @@ public class SetupWizardViewModel : BaseViewModel
     public string NextButtonText => CurrentStep == SetupStep.Confirm ? "Finish" : "Next";
     public string NextButtonWidth => CurrentStep == SetupStep.Confirm ? "120" : "80";
     public bool IsBackVisible => CurrentStep != SetupStep.Server;
+    public string StepProgress => $"Step {(int)CurrentStep + 1}/3";
 
     private string _serverUrl = "http://localhost:5194";
     public string ServerUrl
@@ -120,7 +122,7 @@ public class SetupWizardViewModel : BaseViewModel
             udp.Send(broadcast, broadcast.Length, new IPEndPoint(IPAddress.Broadcast, 52000));
 
             var tasks = new List<Task>();
-            for (int port = 5000; port <= 5010; port++)
+            for (int port = 5190; port <= 5200; port++)
             {
                 var p = port;
                 tasks.Add(TryProbeAsync(p));

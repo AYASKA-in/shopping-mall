@@ -4,12 +4,14 @@ using ShoppingMall.Business.Services;
 using ShoppingMall.Core.Enums;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
+using ShoppingMall.Data.Repositories;
 
 namespace ShoppingMall.Tests;
 
 public class PosServiceTests
 {
-    private readonly Mock<ITransactionRepository> _txnRepo = new();
+    private readonly ShoppingMall.Data.DbContext.ShoppingMallDbContext _db;
+    private readonly ITransactionRepository _txnRepo;
     private readonly Mock<IProductRepository> _productRepo = new();
     private readonly Mock<ICurrentStockRepository> _stockRepo = new();
     private readonly Mock<IRepository<Payment>> _paymentRepo = new();
@@ -22,9 +24,11 @@ public class PosServiceTests
 
     public PosServiceTests()
     {
+        _db = TestDatabaseFactory.CreateInMemoryDbContext();
+        _txnRepo = new TransactionRepository(_db);
         _inventory = new InventoryService(_stockRepo.Object, _ledgerRepo.Object, _productRepo.Object);
         _sut = new PosService(
-            _txnRepo.Object, _productRepo.Object, _stockRepo.Object,
+            _db, _txnRepo, _productRepo.Object, _stockRepo.Object,
             _paymentRepo.Object, _taxRepo.Object, _gst, _inventory, _customerRepo.Object);
     }
 
@@ -35,17 +39,11 @@ public class PosServiceTests
         var terminalId = Guid.NewGuid();
         var userId = Guid.NewGuid();
 
-        _txnRepo.Setup(r => r.GenerateReceiptNumberAsync(storeId))
-            .ReturnsAsync("RCP-0001");
-        _txnRepo.Setup(r => r.AddAsync(It.IsAny<Transaction>()))
-            .ReturnsAsync((Transaction t) => t);
-
         var result = await _sut.CreateTransactionAsync(storeId, terminalId, userId);
 
         result.StoreId.Should().Be(storeId);
         result.TerminalId.Should().Be(terminalId);
         result.UserId.Should().Be(userId);
-        result.ReceiptNumber.Should().Be("RCP-0001");
         result.Status.Should().Be(TransactionStatus.Active);
         result.IdempotencyKey.Should().NotBeNull();
     }
@@ -63,26 +61,21 @@ public class PosServiceTests
             TaxRate = 18,
             Mrp = 120
         };
-        var txn = new Transaction
-        {
-            Id = Guid.NewGuid(),
-            StoreId = Guid.NewGuid(),
-            TerminalId = Guid.NewGuid(),
-            Status = TransactionStatus.Active,
-            Lines = new List<TransactionLine>()
-        };
 
         _productRepo.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
-        _txnRepo.Setup(r => r.GetByIdAsync(txn.Id)).ReturnsAsync(txn);
 
+        var txn = await _sut.CreateTransactionAsync(Guid.NewGuid(), Guid.NewGuid(), null);
         var result = await _sut.AddLineItemAsync(txn.Id, productId, 2);
 
         result.ProductId.Should().Be(productId);
         result.ProductName.Should().Be("Test Product");
         result.Quantity.Should().Be(2);
         result.UnitPrice.Should().Be(100);
+
+        await _db.Entry(txn).ReloadAsync();
         txn.SubTotal.Should().Be(200);
         txn.TaxTotal.Should().Be(36);
+        txn.GrandTotal.Should().Be(236);
     }
 
     [Fact]
@@ -96,87 +89,91 @@ public class PosServiceTests
             SellingPrice = 100,
             TaxRate = 0
         };
-        var txn = new Transaction
-        {
-            Id = Guid.NewGuid(),
-            StoreId = Guid.NewGuid(),
-            TerminalId = Guid.NewGuid(),
-            Status = TransactionStatus.Active,
-            Lines = new List<TransactionLine>()
-        };
 
         _productRepo.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
-        _txnRepo.Setup(r => r.GetByIdAsync(txn.Id)).ReturnsAsync(txn);
 
+        var txn = await _sut.CreateTransactionAsync(Guid.NewGuid(), Guid.NewGuid(), null);
         var result = await _sut.AddLineItemAsync(txn.Id, productId, 1, 150);
 
         result.UnitPrice.Should().Be(150);
+
+        await _db.Entry(txn).ReloadAsync();
         txn.SubTotal.Should().Be(150);
     }
 
     [Fact]
     public async Task ProcessPaymentAsync_CompletesTransaction()
     {
-        var line = new TransactionLine
+        var productId = Guid.NewGuid();
+        var product = new Product
         {
-            Id = Guid.NewGuid(),
-            ProductId = Guid.NewGuid(),
-            ProductName = "Item",
-            Quantity = 2,
-            UnitPrice = 50,
-            TaxRate = 0,
-            NetAmount = 100
-        };
-        var txn = new Transaction
-        {
-            Id = Guid.NewGuid(),
-            StoreId = Guid.NewGuid(),
-            TerminalId = Guid.NewGuid(),
-            Status = TransactionStatus.Active,
-            SubTotal = 100,
-            GrandTotal = 100,
-            Lines = new List<TransactionLine> { line },
-            Payments = new List<Payment>()
+            Id = productId,
+            Name = "Item",
+            SKU = "TST-002",
+            SellingPrice = 50,
+            TaxRate = 0
         };
 
-        _txnRepo.Setup(r => r.GetByIdAsync(txn.Id)).ReturnsAsync(txn);
-        _txnRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
-            .Returns(Task.CompletedTask);
+        _productRepo.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
 
         var stock = new CurrentStock
         {
             Id = Guid.NewGuid(),
-            StoreId = txn.StoreId,
-            ProductId = line.ProductId,
+            StoreId = Guid.NewGuid(),
+            ProductId = productId,
             OnHand = 100,
             Reserved = 0,
             Available = 100
         };
-        _stockRepo.Setup(r => r.GetByStoreAndProductAsync(txn.StoreId, line.ProductId))
+        _stockRepo.Setup(r => r.GetByStoreAndProductAsync(It.IsAny<Guid>(), productId))
             .ReturnsAsync(stock);
+
+        var txn = await _sut.CreateTransactionAsync(stock.StoreId, Guid.NewGuid(), null);
+        await _sut.AddLineItemAsync(txn.Id, productId, 2);
 
         var result = await _sut.ProcessPaymentAsync(txn.Id, 100, PaymentMethod.Cash, 100);
 
         result.Amount.Should().Be(100);
         result.Method.Should().Be(PaymentMethod.Cash);
         result.ChangeAmount.Should().Be(0);
+
+        await _db.Entry(txn).ReloadAsync();
         txn.Status.Should().Be(TransactionStatus.Completed);
     }
 
     [Fact]
     public async Task ProcessPaymentAsync_AlreadyCompleted_Throws()
     {
-        var txn = new Transaction
+        var productId = Guid.NewGuid();
+        var product = new Product
         {
-            Id = Guid.NewGuid(),
-            Status = TransactionStatus.Completed,
-            Payments = new List<Payment>()
+            Id = productId,
+            Name = "Item",
+            SKU = "TST-003",
+            SellingPrice = 10,
+            TaxRate = 0
         };
 
-        _txnRepo.Setup(r => r.GetByIdAsync(txn.Id)).ReturnsAsync(txn);
+        _productRepo.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
+
+        var stock = new CurrentStock
+        {
+            Id = Guid.NewGuid(),
+            StoreId = Guid.NewGuid(),
+            ProductId = productId,
+            OnHand = 100,
+            Reserved = 0,
+            Available = 100
+        };
+        _stockRepo.Setup(r => r.GetByStoreAndProductAsync(It.IsAny<Guid>(), productId))
+            .ReturnsAsync(stock);
+
+        var txn = await _sut.CreateTransactionAsync(stock.StoreId, Guid.NewGuid(), null);
+        await _sut.AddLineItemAsync(txn.Id, productId, 1);
+        await _sut.ProcessPaymentAsync(txn.Id, 10, PaymentMethod.Cash);
 
         await FluentActions
-            .Invoking(() => _sut.ProcessPaymentAsync(txn.Id, 100, PaymentMethod.Cash))
+            .Invoking(() => _sut.ProcessPaymentAsync(txn.Id, 10, PaymentMethod.Cash))
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Transaction already completed");
     }
@@ -184,41 +181,32 @@ public class PosServiceTests
     [Fact]
     public async Task ProcessPaymentAsync_InsufficientStock_Throws()
     {
-        var line = new TransactionLine
+        var productId = Guid.NewGuid();
+        var product = new Product
         {
-            Id = Guid.NewGuid(),
-            ProductId = Guid.NewGuid(),
-            ProductName = "OutOfStock",
-            Quantity = 50,
-            UnitPrice = 10,
-            TaxRate = 0,
-            NetAmount = 500
-        };
-        var txn = new Transaction
-        {
-            Id = Guid.NewGuid(),
-            StoreId = Guid.NewGuid(),
-            TerminalId = Guid.NewGuid(),
-            Status = TransactionStatus.Active,
-            SubTotal = 500,
-            GrandTotal = 500,
-            Lines = new List<TransactionLine> { line },
-            Payments = new List<Payment>()
+            Id = productId,
+            Name = "OutOfStock",
+            SKU = "TST-004",
+            SellingPrice = 10,
+            TaxRate = 0
         };
 
-        _txnRepo.Setup(r => r.GetByIdAsync(txn.Id)).ReturnsAsync(txn);
+        _productRepo.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
 
         var stock = new CurrentStock
         {
             Id = Guid.NewGuid(),
-            StoreId = txn.StoreId,
-            ProductId = line.ProductId,
+            StoreId = Guid.NewGuid(),
+            ProductId = productId,
             OnHand = 10,
             Reserved = 0,
             Available = 10
         };
-        _stockRepo.Setup(r => r.GetByStoreAndProductAsync(txn.StoreId, line.ProductId))
+        _stockRepo.Setup(r => r.GetByStoreAndProductAsync(It.IsAny<Guid>(), productId))
             .ReturnsAsync(stock);
+
+        var txn = await _sut.CreateTransactionAsync(stock.StoreId, Guid.NewGuid(), null);
+        await _sut.AddLineItemAsync(txn.Id, productId, 50);
 
         await FluentActions
             .Invoking(() => _sut.ProcessPaymentAsync(txn.Id, 500, PaymentMethod.Cash))

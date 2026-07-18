@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using ShoppingMall.Business.Services;
 using ShoppingMall.Core.Enums;
+using ShoppingMall.Data.DbContext;
 
 namespace ShoppingMall.Server.Endpoints;
 
@@ -27,9 +29,12 @@ public static class PosEndpoints
             return Results.Ok(payment);
         });
 
-        group.MapGet("/transactions/{id}", async (Guid id, ITransactionRepository txnRepo) =>
+        group.MapGet("/transactions/{id}", async (Guid id, ShoppingMallDbContext db) =>
         {
-            var txn = await txnRepo.GetByIdAsync(id);
+            var txn = await db.Transactions
+                .Include(t => t.Lines)
+                .Include(t => t.Payments)
+                .FirstOrDefaultAsync(t => t.Id == id);
             return txn is null ? Results.NotFound() : Results.Ok(txn);
         });
 
@@ -87,6 +92,6 @@ public static class PosEndpoints
 
 public record SuspendRequest(string BasketData, decimal BasketTotal, int ItemCount);
 
-public record CreateTransactionRequest(Guid StoreId, Guid TerminalId, Guid? UserId);
+public record CreateTransactionRequest(Guid StoreId, Guid? TerminalId, Guid? UserId);
 public record AddLineItemRequest(Guid ProductId, decimal Quantity, decimal? OverridePrice);
 public record ProcessPaymentRequest(decimal Amount, PaymentMethod Method, decimal? TenderedAmount);

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ShoppingMall.Data;
 using ShoppingMall.Data.DbContext;
 using ShoppingMall.Data.Seed;
@@ -20,6 +21,11 @@ builder.Services.AddBusinessLayer();
 builder.Services.AddHostedService<CloudSyncService>();
 builder.Services.AddHostedService<SessionCleanupService>();
 builder.Services.AddScoped<CloudBackupService>();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

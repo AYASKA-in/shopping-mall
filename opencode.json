@@ -1,5 +1,13 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mode": {
+    "plan": {
+      "permission": {
+        "plan_enter": "allow",
+        "plan_exit": "allow"
+      }
+    }
+  },
   "agent": {
     "plan": {
       "description": "Analyze requirements and produce a detailed plan before any code changes",
@@ -9,10 +17,7 @@
       }
     },
     "build": {
-      "description": "Implement features and fix bugs with ponytail lazy efficiency"
+      "description": "Implement features and fix bugs"
     }
-  },
-  "plugin": [
-    ".opencode/plugins/ponytail/.opencode/plugins/ponytail.mjs"
-  ]
+  }
 }

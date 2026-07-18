@@ -5,6 +5,7 @@
         xmlns:views="clr-namespace:ShoppingMall.Client.Views"
         xmlns:res="clr-namespace:ShoppingMall.Client.Resources"
         xmlns:conv="clr-namespace:ShoppingMall.Client.Converters"
+        x:Name="ThisWindow"
         Title="{x:Static res:Strings.AppTitle}" Height="768" Width="1280"
         WindowState="Maximized" WindowStyle="SingleBorderWindow"
         FontFamily="Segoe UI" FontSize="14">
@@ -29,20 +30,20 @@
                            FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
                             Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}, ConverterParameter=False}">
-                    <Button Content="POS" Command="{Binding NavigateToPosCommand}"
-                            Foreground="White" Background="{Binding IsPosView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Inventory" Command="{Binding NavigateToInventoryCommand}"
-                            Foreground="White" Background="{Binding IsInventoryView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Products" Command="{Binding NavigateToProductListCommand}"
-                            Foreground="White" Background="{Binding IsProductListView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Suppliers" Command="{Binding NavigateToSupplierListCommand}"
-                            Foreground="White" Background="{Binding IsSupplierListView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Customers" Command="{Binding NavigateToCustomerCommand}"
-                            Foreground="White" Background="{Binding IsCustomerView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Reports" Command="{Binding NavigateToReportsCommand}"
-                            Foreground="White" Background="{Binding IsReportsView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
-                    <Button Content="Admin" Command="{Binding NavigateToAdminCommand}"
-                            Foreground="White" Background="{Binding IsAdminView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
+                    <Button Content="POS" Command="{Binding NavigateToPosCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsPosView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Inventory" Command="{Binding NavigateToInventoryCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsInventoryView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Products" Command="{Binding NavigateToProductListCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsProductListView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Suppliers" Command="{Binding NavigateToSupplierListCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsSupplierListView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Customers" Command="{Binding NavigateToCustomerCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsCustomerView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Reports" Command="{Binding NavigateToReportsCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsReportsView, Converter={StaticResource ActiveNavBrush}}"/>
+                    <Button Content="Admin" Command="{Binding NavigateToAdminCommand}" Style="{StaticResource NavButton}"
+                            Foreground="White" Background="{Binding IsAdminView, Converter={StaticResource ActiveNavBrush}}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}, ConverterParameter=False}">
@@ -55,20 +56,20 @@
         </Border>
 
         <views:LoginView Grid.Row="1" DataContext="{Binding LoginVM}"
-                         Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}}"/>
+                         Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsLoginView, Converter={StaticResource BoolToVis}}"/>
         <views:PosView Grid.Row="1" DataContext="{Binding PosVM}" 
-                       Visibility="{Binding IsPosView, Converter={StaticResource BoolToVis}}"/>
+                       Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsPosView, Converter={StaticResource BoolToVis}}"/>
         <views:ProductListView Grid.Row="1" DataContext="{Binding ProductListVM}"
-                               Visibility="{Binding IsProductListView, Converter={StaticResource BoolToVis}}"/>
+                               Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsProductListView, Converter={StaticResource BoolToVis}}"/>
         <views:SupplierListView Grid.Row="1" DataContext="{Binding SupplierListVM}"
-                                Visibility="{Binding IsSupplierListView, Converter={StaticResource BoolToVis}}"/>
+                                Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsSupplierListView, Converter={StaticResource BoolToVis}}"/>
         <views:CustomerView Grid.Row="1" DataContext="{Binding CustomerVM}"
-                             Visibility="{Binding IsCustomerView, Converter={StaticResource BoolToVis}}"/>
+                             Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsCustomerView, Converter={StaticResource BoolToVis}}"/>
         <views:ReportsView Grid.Row="1" DataContext="{Binding ReportsVM}"
-                           Visibility="{Binding IsReportsView, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsReportsView, Converter={StaticResource BoolToVis}}"/>
         <views:AdminView Grid.Row="1" DataContext="{Binding AdminVM}"
-                         Visibility="{Binding IsAdminView, Converter={StaticResource BoolToVis}}"/>
+                         Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsAdminView, Converter={StaticResource BoolToVis}}"/>
         <views:InventoryView Grid.Row="1" DataContext="{Binding InventoryVM}"
-                             Visibility="{Binding IsInventoryView, Converter={StaticResource BoolToVis}}"/>
+                             Visibility="{Binding ElementName=ThisWindow, Path=DataContext.IsInventoryView, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </Window>

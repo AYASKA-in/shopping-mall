@@ -187,16 +187,22 @@ public static class ReportEndpoints
             return Results.Ok(summary);
         });
 
-        group.MapGet("/stock/{storeId}/summary", async (Guid storeId, ICurrentStockRepository stockRepo) =>
+        group.MapGet("/stock/{storeId}/summary", async (Guid storeId, ShoppingMallDbContext db) =>
         {
-            var stocks = await stockRepo.FindAsync(s => s.StoreId == storeId);
-            return Results.Ok(new
-            {
-                TotalProducts = stocks.Count(),
-                TotalStockValue = stocks.Sum(s => s.OnHand),
-                LowStockItems = stocks.Count(s => s.Available <= 10),
-                OutOfStock = stocks.Count(s => s.Available <= 0)
-            });
+            var stocks = await db.CurrentStocks
+                .Include(s => s.Product)
+                .Where(s => s.StoreId == storeId)
+                .Select(s => new
+                {
+                    s.Product.Name,
+                    s.Product.SKU,
+                    s.OnHand,
+                    s.Reserved,
+                    s.Available
+                })
+                .ToListAsync();
+
+            return Results.Ok(stocks);
         });
 
         group.MapGet("/dashboard/{storeId}", async (Guid storeId, ITransactionRepository txnRepo, ICurrentStockRepository stockRepo) =>

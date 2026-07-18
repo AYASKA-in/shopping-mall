@@ -44,20 +44,16 @@ public static class ProductEndpoints
         group.MapGet("/hsn-codes", async (IRepository<HSN> repo) =>
             Results.Ok(await repo.GetAllAsync()));
 
-        group.MapPost("/", async (Product product, IProductRepository repo, IRepository<Barcode> barcodeRepo) =>
+        group.MapPost("/", async (Product product, IProductRepository repo) =>
         {
             product.Id = Guid.NewGuid();
             product.CreatedAt = DateTime.UtcNow;
-            var created = await repo.AddAsync(product);
-
-            var defaultBarcode = product.Barcodes.FirstOrDefault();
-            if (defaultBarcode != null)
+            foreach (var barcode in product.Barcodes)
             {
-                defaultBarcode.Id = Guid.NewGuid();
-                defaultBarcode.ProductId = created.Id;
-                await barcodeRepo.AddAsync(defaultBarcode);
+                barcode.Id = Guid.NewGuid();
+                barcode.ProductId = product.Id;
             }
-
+            var created = await repo.AddAsync(product);
             return Results.Created($"/api/products/{created.Id}", created);
         });
 

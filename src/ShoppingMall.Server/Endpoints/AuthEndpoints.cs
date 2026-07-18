@@ -18,7 +18,7 @@ public static class AuthEndpoints
             {
                 result.User!.Id,
                 result.User.DisplayName,
-                result.User.Role,
+                Role = result.User.Role.ToString(),
                 result.User.StoreId,
                 SessionId = result.SessionId
             });

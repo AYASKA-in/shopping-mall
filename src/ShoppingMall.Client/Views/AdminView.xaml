@@ -5,20 +5,25 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToBrushConverter x:Key="ActiveTabBrush" TrueBrush="#DBEAFE" FalseBrush="Transparent" />
+        <conv:StatusToColorConverter x:Key="StatusColor" />
     </UserControl.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" IsIndeterminate="True"
+                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"
+                     Height="4" Foreground="#1A56DB" Margin="0,0,0,5"/>
 
-        <Border Grid.Row="0" Background="#1A56DB" Padding="10" CornerRadius="5">
+        <Border Grid.Row="1" Background="#1A56DB" Padding="10" CornerRadius="5">
             <TextBlock Text="Admin Panel" FontSize="18" FontWeight="Bold" Foreground="White"/>
         </Border>
 
-        <Grid Grid.Row="1" Margin="0,10">
+        <Grid Grid.Row="2" Margin="0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -45,7 +50,7 @@
             <Button Grid.Column="7" Content="Refresh" Command="{Binding RefreshCommand}" Background="#059669" Foreground="White" Padding="12,8" BorderThickness="0"/>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid Visibility="{Binding IsUsersTab, Converter={StaticResource BoolToVis}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -167,6 +172,6 @@
             </Grid>
         </Grid>
 
-        <TextBlock Grid.Row="3" Text="{Binding StatusText}" Foreground="#6B7280" Margin="0,10,0,0"/>
+        <TextBlock Grid.Row="4" Text="{Binding StatusText}" Foreground="{Binding StatusText, Converter={StaticResource StatusColor}}" Margin="0,10,0,0"/>
     </Grid>
 </UserControl>

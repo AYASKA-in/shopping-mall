@@ -1,10 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using ShoppingMall.Core.Interfaces;
 using ShoppingMall.Core.Models;
+using ShoppingMall.Data.DbContext;
 
 namespace ShoppingMall.Business.Services;
 
 public class PosService
 {
+    private readonly ShoppingMallDbContext _db;
     private readonly ITransactionRepository _transactionRepo;
     private readonly IProductRepository _productRepo;
     private readonly ICurrentStockRepository _stockRepo;
@@ -15,6 +18,7 @@ public class PosService
     private readonly IRepository<Customer> _customerRepo;
 
     public PosService(
+        ShoppingMallDbContext db,
         ITransactionRepository transactionRepo,
         IProductRepository productRepo,
         ICurrentStockRepository stockRepo,
@@ -24,6 +28,7 @@ public class PosService
         InventoryService inventoryService,
         IRepository<Customer> customerRepo)
     {
+        _db = db;
         _transactionRepo = transactionRepo;
         _productRepo = productRepo;
         _stockRepo = stockRepo;
@@ -34,14 +39,14 @@ public class PosService
         _customerRepo = customerRepo;
     }
 
-    public async Task<Transaction> CreateTransactionAsync(Guid storeId, Guid terminalId, Guid? userId)
+    public async Task<Transaction> CreateTransactionAsync(Guid storeId, Guid? terminalId, Guid? userId)
     {
         var receiptNo = await _transactionRepo.GenerateReceiptNumberAsync(storeId);
         var transaction = new Transaction
         {
             Id = Guid.NewGuid(),
             StoreId = storeId,
-            TerminalId = terminalId,
+            TerminalId = terminalId ?? Guid.Empty,
             UserId = userId,
             ReceiptNumber = receiptNo,
             Status = Core.Enums.TransactionStatus.Active,
@@ -88,18 +93,29 @@ public class PosService
             IsWeighable = product.IsWeighable
         };
 
-        transaction.Lines.Add(line);
-        transaction.SubTotal += quantity * unitPrice;
-        transaction.TaxTotal += gstResult.TotalTaxAmount;
-        transaction.GrandTotal = transaction.SubTotal - transaction.DiscountTotal + transaction.TaxTotal;
-        await _transactionRepo.UpdateAsync(transaction);
+        var newSubTotal = transaction.SubTotal + quantity * unitPrice;
+        var newTaxTotal = transaction.TaxTotal + gstResult.TotalTaxAmount;
+        var newGrandTotal = newSubTotal - transaction.DiscountTotal + newTaxTotal;
+
+        _db.TransactionLines.Add(line);
+        await _db.Transactions
+            .Where(t => t.Id == transactionId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.SubTotal, newSubTotal)
+                .SetProperty(t => t.TaxTotal, newTaxTotal)
+                .SetProperty(t => t.GrandTotal, newGrandTotal));
+        await _db.SaveChangesAsync();
 
         return line;
     }
 
     public async Task<Payment> ProcessPaymentAsync(Guid transactionId, decimal amount, Core.Enums.PaymentMethod method, decimal? tenderedAmount = null)
     {
-        var transaction = await _transactionRepo.GetByIdAsync(transactionId);
+        var transaction = await _db.Transactions
+            .Include(t => t.Lines)
+            .Include(t => t.Payments)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == transactionId);
         if (transaction == null)
             throw new InvalidOperationException("Transaction not found");
 
@@ -125,8 +141,7 @@ public class PosService
             CreatedAt = DateTime.UtcNow
         };
 
-        transaction.Status = Core.Enums.TransactionStatus.Completed;
-        transaction.Payments.Add(payment);
+        _db.Payments.Add(payment);
 
         foreach (var line in transaction.Lines)
         {
@@ -141,7 +156,11 @@ public class PosService
             }
         }
 
-        await _transactionRepo.UpdateAsync(transaction);
+        await _db.Transactions
+            .Where(t => t.Id == transactionId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.Status, Core.Enums.TransactionStatus.Completed));
+        await _db.SaveChangesAsync();
 
         return payment;
     }

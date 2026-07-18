@@ -9,9 +9,9 @@ public class OfflineCache : IDisposable
     private readonly SqliteConnection _connection;
     private readonly string _dbPath;
 
-    public OfflineCache()
+    public OfflineCache(string? dbPath = null)
     {
-        _dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        _dbPath = dbPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ShoppingMall", "offline_cache.db");
         Directory.CreateDirectory(Path.GetDirectoryName(_dbPath)!);
 

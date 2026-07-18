@@ -201,8 +201,15 @@ public class PosViewModel : BaseViewModel
         PayCommand = new AsyncRelayCommand(async _ => await ProcessPaymentAsync());
         QuickAmountCommand = new RelayCommand(amount =>
         {
-            if (amount is decimal d) TenderedAmount = d;
-            else if (amount is string s && s == "Exact") TenderedAmount = GrandTotal;
+            if (amount is string s)
+            {
+                if (s == "Exact") TenderedAmount = GrandTotal;
+                else if (decimal.TryParse(s, out var d)) TenderedAmount = d;
+            }
+            else if (amount is decimal d)
+            {
+                TenderedAmount = d;
+            }
         });
         SuspendCommand = new AsyncRelayCommand(async _ => await SuspendTransactionAsync());
         RecallCommand = new AsyncRelayCommand(async _ => await RecallTransactionAsync());

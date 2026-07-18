@@ -31,14 +31,22 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
         var storeCode = store?.Code ?? "XXX";
         var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
         var key = $"{storeId}-{datePart}";
+        var todayStart = DateTime.UtcNow.Date;
+        var todayEnd = todayStart.AddDays(1);
 
-        var count = _receiptCounters.AddOrUpdate(key,
-            k => {
-                var todayStart = DateTime.UtcNow.Date;
-                var todayEnd = todayStart.AddDays(1);
-                return _dbSet.Count(t => t.CreatedAt >= todayStart && t.CreatedAt < todayEnd) + 1;
-            },
-            (_, v) => v + 1);
+        _receiptCounters.GetOrAdd(key, _ =>
+        {
+            var maxReceipt = _dbSet
+                .Where(t => t.CreatedAt >= todayStart && t.CreatedAt < todayEnd)
+                .Max(t => (string?)t.ReceiptNumber);
+            if (maxReceipt == null) return 0;
+            var lastDash = maxReceipt.LastIndexOf('-');
+            if (lastDash < 0) return 0;
+            int.TryParse(maxReceipt[(lastDash + 1)..], out var n);
+            return n;
+        });
+
+        var count = _receiptCounters.AddOrUpdate(key, _ => 1, (_, v) => v + 1);
 
         return $"{storeCode}-{datePart}-{count:D4}";
     }

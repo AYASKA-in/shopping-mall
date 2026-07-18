@@ -13,6 +13,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(x => x.ReceiptNumber).HasMaxLength(30).IsRequired();
         builder.HasIndex(x => x.ReceiptNumber).IsUnique();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(x => x.RowVersion).IsConcurrencyToken(false);
         builder.HasOne(x => x.Store).WithMany().HasForeignKey(x => x.StoreId);
         builder.HasOne(x => x.Terminal).WithMany().HasForeignKey(x => x.TerminalId);
         builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).IsRequired(false);

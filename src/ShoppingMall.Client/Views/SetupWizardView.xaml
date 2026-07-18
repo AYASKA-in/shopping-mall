@@ -14,7 +14,9 @@
                            Foreground="#374151" Margin="0,5,0,25"/>
 
                 <TextBlock Text="{Binding StepTitle}" FontSize="18" FontWeight="SemiBold"
-                           Foreground="#111827" Margin="0,0,0,15"/>
+                           Foreground="#111827" Margin="0,0,0,5"/>
+                <TextBlock Text="{Binding StepProgress}" FontSize="12" Foreground="#9CA3AF"
+                           TextAlignment="Center" Margin="0,0,0,15"/>
 
                 <StackPanel Visibility="{Binding IsStepServer, Converter={StaticResource BoolToVis}}">
                     <TextBlock Text="Server Address" FontSize="12" Foreground="#374151"/>
