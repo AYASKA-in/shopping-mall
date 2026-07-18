@@ -31,7 +31,7 @@ public class CustomerViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedCustomer, value);
-            if (value != null) _ = LoadPurchaseHistoryAsync(value.Id);
+            if (value != null) FireAndForget(() => LoadPurchaseHistoryAsync(value.Id));
         }
     }
 
@@ -57,8 +57,8 @@ public class CustomerViewModel : BaseViewModel
     public CustomerViewModel(ApiClient api)
     {
         _api = api;
-        SearchCommand = new RelayCommand(async _ => await SearchAsync());
-        CreateCustomerCommand = new RelayCommand(async _ => await CreateCustomerAsync());
+        SearchCommand = new AsyncRelayCommand(async _ => await SearchAsync());
+        CreateCustomerCommand = new AsyncRelayCommand(async _ => await CreateCustomerAsync());
     }
 
     private async Task SearchAsync()
@@ -83,6 +83,10 @@ public class CustomerViewModel : BaseViewModel
                 CustomerInfo = "Customer not found";
                 SelectedCustomer = null;
             }
+        }
+        catch (Exception ex)
+        {
+            CustomerInfo = $"Search error: {ex.Message}";
         }
         finally
         {
@@ -126,6 +130,10 @@ public class CustomerViewModel : BaseViewModel
             PurchaseHistory.Clear();
             if (result?.Items != null)
                 foreach (var tx in result.Items) PurchaseHistory.Add(tx);
+        }
+        catch (Exception ex)
+        {
+            CustomerInfo = $"Load error: {ex.Message}";
         }
         finally
         {

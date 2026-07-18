@@ -1,12 +1,11 @@
-using ShoppingMall.Client.ViewModels;
+using System.Windows.Controls;
 
 namespace ShoppingMall.Client.Views;
 
-public partial class InventoryView
+public partial class InventoryView : UserControl
 {
-    public InventoryView(InventoryViewModel viewModel)
+    public InventoryView()
     {
         InitializeComponent();
-        DataContext = viewModel;
     }
 }

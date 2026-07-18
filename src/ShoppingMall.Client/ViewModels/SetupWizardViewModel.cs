@@ -44,7 +44,7 @@ public class SetupWizardViewModel : BaseViewModel
     public string NextButtonWidth => CurrentStep == SetupStep.Confirm ? "120" : "80";
     public bool IsBackVisible => CurrentStep != SetupStep.Server;
 
-    private string _serverUrl = "http://localhost:5000";
+    private string _serverUrl = "http://localhost:5194";
     public string ServerUrl
     {
         get => _serverUrl;
@@ -101,8 +101,8 @@ public class SetupWizardViewModel : BaseViewModel
         _config = config;
         _http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
 
-        AutoDiscoverCommand = new RelayCommand(async _ => await AutoDiscoverAsync());
-        NextCommand = new RelayCommand(async _ => await OnNextAsync());
+        AutoDiscoverCommand = new AsyncRelayCommand(async _ => await AutoDiscoverAsync());
+        NextCommand = new AsyncRelayCommand(async _ => await OnNextAsync());
         BackCommand = new RelayCommand(_ => GoBack());
     }
 

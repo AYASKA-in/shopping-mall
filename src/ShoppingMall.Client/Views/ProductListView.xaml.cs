@@ -1,14 +1,16 @@
-using ShoppingMall.Client.ViewModels;
 using System.Windows.Controls;
 
 namespace ShoppingMall.Client.Views;
 
 public partial class ProductListView : UserControl
 {
-    public ProductListView(ProductListViewModel viewModel)
+    public ProductListView()
     {
         InitializeComponent();
-        DataContext = viewModel;
-        Loaded += async (_, _) => await viewModel.LoadAsync();
+        Loaded += async (_, _) =>
+        {
+            if (DataContext is ViewModels.ProductListViewModel vm)
+                await vm.LoadAsync();
+        };
     }
 }

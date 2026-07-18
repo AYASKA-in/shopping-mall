@@ -89,7 +89,7 @@ public class MainViewModel : BaseViewModel
         NavigateToProductListCommand = new RelayCommand(_ => CurrentView = AppView.ProductList);
         NavigateToSupplierListCommand = new RelayCommand(_ => CurrentView = AppView.SupplierList);
         NavigateToCustomerCommand = new RelayCommand(_ => CurrentView = AppView.Customer);
-        LogoutCommand = new RelayCommand(async _ =>
+        LogoutCommand = new AsyncRelayCommand(async _ =>
         {
             _api.ClearSessionId();
             CurrentView = AppView.Login;

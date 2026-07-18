@@ -25,7 +25,7 @@ public class AdminViewModel : BaseViewModel
             OnPropertyChanged(nameof(IsConfigTab));
             OnPropertyChanged(nameof(IsBackupsTab));
             OnPropertyChanged(nameof(IsAuditTab));
-            _ = LoadTabAsync();
+            FireAndForget(LoadTabAsync);
         }
     }
 
@@ -71,14 +71,14 @@ public class AdminViewModel : BaseViewModel
         _api = api;
         _config = config;
 
-        RefreshCommand = new RelayCommand(async _ => await LoadTabAsync());
+        RefreshCommand = new AsyncRelayCommand(async _ => await LoadTabAsync());
         SelectUsersTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Users);
         SelectStoresTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Stores);
         SelectTerminalsTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Terminals);
         SelectConfigTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Config);
         SelectBackupsTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Backups);
         SelectAuditTabCommand = new RelayCommand(_ => SelectedTab = AdminTab.Audit);
-        TriggerBackupCommand = new RelayCommand(async _ => await TriggerBackupAsync());
+        TriggerBackupCommand = new AsyncRelayCommand(async _ => await TriggerBackupAsync());
     }
 
     public async Task LoadTabAsync()

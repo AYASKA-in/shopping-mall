@@ -11,7 +11,7 @@ public class ApiClient
     public ApiClient(HttpClient http, IConfiguration config)
     {
         _http = http;
-        _baseUrl = config.GetValue<string>("ServerUrl") ?? "http://localhost:5000";
+        _baseUrl = config.GetValue<string>("ServerUrl") ?? "http://localhost:5194";
         _http.BaseAddress = new Uri(_baseUrl);
     }
 
@@ -84,7 +84,10 @@ public class ApiClient
 
     // Products
     public async Task<List<Product>> SearchProductsAsync(string query)
-        => await _http.GetFromJsonAsync<List<Product>>($"/api/products?search={query}") ?? new();
+    {
+        try { return await _http.GetFromJsonAsync<List<Product>>($"/api/products?search={query}") ?? new(); }
+        catch { return new(); }
+    }
 
     public async Task<Product?> GetProductByBarcodeAsync(string barcode)
     {

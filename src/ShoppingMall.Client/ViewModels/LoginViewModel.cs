@@ -42,7 +42,7 @@ public class LoginViewModel : BaseViewModel
     {
         _api = api;
         _config = config;
-        LoginCommand = new RelayCommand(async _ => await LoginAsync());
+        LoginCommand = new AsyncRelayCommand(async _ => await LoginAsync());
     }
 
     private async Task LoginAsync()

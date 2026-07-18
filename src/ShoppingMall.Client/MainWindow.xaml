@@ -4,11 +4,13 @@
         xmlns:vm="clr-namespace:ShoppingMall.Client.ViewModels"
         xmlns:views="clr-namespace:ShoppingMall.Client.Views"
         xmlns:res="clr-namespace:ShoppingMall.Client.Resources"
+        xmlns:conv="clr-namespace:ShoppingMall.Client.Converters"
         Title="{x:Static res:Strings.AppTitle}" Height="768" Width="1280"
         WindowState="Maximized" WindowStyle="SingleBorderWindow"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToBrushConverter x:Key="ActiveNavBrush" TrueBrush="#2563EB" FalseBrush="Transparent" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -28,19 +30,19 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
                             Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}, ConverterParameter=False}">
                     <Button Content="POS" Command="{Binding NavigateToPosCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsPosView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Inventory" Command="{Binding NavigateToInventoryCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsInventoryView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Products" Command="{Binding NavigateToProductListCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsProductListView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Suppliers" Command="{Binding NavigateToSupplierListCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsSupplierListView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Customers" Command="{Binding NavigateToCustomerCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsCustomerView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Reports" Command="{Binding NavigateToReportsCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsReportsView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                     <Button Content="Admin" Command="{Binding NavigateToAdminCommand}"
-                            Foreground="White" Background="Transparent" BorderThickness="0" Padding="15,8"/>
+                            Foreground="White" Background="{Binding IsAdminView, Converter={StaticResource ActiveNavBrush}}" BorderThickness="0" Padding="15,8"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsLoginView, Converter={StaticResource BoolToVis}, ConverterParameter=False}">

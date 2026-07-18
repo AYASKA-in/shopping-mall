@@ -1,0 +1,11 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+  <PropertyGroup>
+    <OutputName>ShoppingMall-POS</OutputName>
+    <OutputType>msi</OutputType>
+    <InstallerVersion>500</InstallerVersion>
+    <SuppressSpecificWarnings>1070;1071</SuppressSpecificWarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <BindPath Include="$(MSBuildProjectDirectory)\dist" />
+  </ItemGroup>
+</Project>

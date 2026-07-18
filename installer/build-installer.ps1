@@ -1,6 +1,7 @@
 param(
     [string]$Configuration = "Release",
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$SkipMsi
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,8 +72,26 @@ if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::CreateFromDirectory($distDir, $zipPath)
 
+if (-not $SkipMsi) {
+    Write-Host "Building MSI installer..." -ForegroundColor Cyan
+    try {
+        $wixTool = Get-Command wix -ErrorAction Stop
+        # Generate component fragment from dist
+        & "$installerDir\Generate-FilesFragment.ps1" *>$null
+        & $wixTool.Source build "$installerDir\Product.wxs" -out "$installerDir\ShoppingMall-POS-v1.0.0.msi" -b "$distDir" -arch x64
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "MSI: $installerDir\ShoppingMall-POS-v1.0.0.msi" -ForegroundColor Yellow
+            Write-Host "Size: $((Get-Item "$installerDir\ShoppingMall-POS-v1.0.0.msi").Length / 1MB) MB" -ForegroundColor Yellow
+        } else {
+            Write-Host "MSI build had warnings. ZIP is the primary distribution." -ForegroundColor DarkYellow
+        }
+    } catch {
+        Write-Host "MSI build skipped (WiX Toolset not available): $_" -ForegroundColor DarkYellow
+    }
+}
+
 Write-Host "Done!" -ForegroundColor Green
-Write-Host "Distribution: $zipPath" -ForegroundColor Yellow
+Write-Host "ZIP Distribution: $zipPath" -ForegroundColor Yellow
 Write-Host "Size: $((Get-Item $zipPath).Length / 1MB) MB" -ForegroundColor Yellow
 
 # Cleanup dist

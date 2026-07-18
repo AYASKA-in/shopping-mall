@@ -22,7 +22,7 @@ public class ReportsViewModel : BaseViewModel
             OnPropertyChanged(nameof(IsProductsTab));
             OnPropertyChanged(nameof(IsGstTab));
             OnPropertyChanged(nameof(IsCashierTab));
-            _ = LoadReportAsync();
+            FireAndForget(LoadReportAsync);
         }
     }
 
@@ -125,7 +125,7 @@ public class ReportsViewModel : BaseViewModel
         _api = api;
         _config = config;
 
-        RefreshCommand = new RelayCommand(async _ => await LoadReportAsync());
+        RefreshCommand = new AsyncRelayCommand(async _ => await LoadReportAsync());
         SelectSalesTabCommand = new RelayCommand(_ => SelectedTab = ReportTab.Sales);
         SelectProductsTabCommand = new RelayCommand(_ => SelectedTab = ReportTab.Products);
         SelectGstTabCommand = new RelayCommand(_ => SelectedTab = ReportTab.Gst);

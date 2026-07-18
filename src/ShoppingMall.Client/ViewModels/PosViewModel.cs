@@ -37,7 +37,7 @@ public class PosViewModel : BaseViewModel
         set
         {
             if (SetProperty(ref _barcodeInput, value) && value.Length >= 4)
-                _ = LookupBarcodeAsync(value);
+                FireAndForget(() => LookupBarcodeAsync(value));
         }
     }
 
@@ -50,7 +50,7 @@ public class PosViewModel : BaseViewModel
             SetProperty(ref _selectedPayment, value);
             OnPropertyChanged(nameof(IsUpiPayment));
             if (value == "UPI")
-                _ = GenerateUpiQrAsync();
+                FireAndForget(GenerateUpiQrAsync);
         }
     }
 
@@ -192,21 +192,25 @@ public class PosViewModel : BaseViewModel
         _cfg = _config.Load();
         _cart.Lines.CollectionChanged += (_, _) => RefreshTotals();
 
-        NewTransactionCommand = new RelayCommand(async _ => await CreateNewTransactionAsync());
-        ScanBarcodeCommand = new RelayCommand(async _ => await LookupBarcodeAsync(BarcodeInput));
+        NewTransactionCommand = new AsyncRelayCommand(async _ => await CreateNewTransactionAsync());
+        ScanBarcodeCommand = new AsyncRelayCommand(async _ => await LookupBarcodeAsync(BarcodeInput));
         IncrementQtyCommand = new RelayCommand(item => AdjustQuantity((CartLineItem)item!, 1));
         DecrementQtyCommand = new RelayCommand(item => AdjustQuantity((CartLineItem)item!, -1));
         RemoveItemCommand = new RelayCommand(item => _cart.RemoveItem((CartLineItem)item!));
-        ApplyDiscountCommand = new RelayCommand(async _ => await ShowDiscountDialogAsync());
-        PayCommand = new RelayCommand(async _ => await ProcessPaymentAsync());
-        QuickAmountCommand = new RelayCommand(amount => { if (amount is decimal d) TenderedAmount = d; });
-        SuspendCommand = new RelayCommand(async _ => await SuspendTransactionAsync());
-        RecallCommand = new RelayCommand(async _ => await RecallTransactionAsync());
-        ReprintCommand = new RelayCommand(async _ => await ReprintLastReceiptAsync());
-        ApplyCouponCommand = new RelayCommand(async _ => await ApplyCouponAsync());
-        LookupLoyaltyCommand = new RelayCommand(async _ => await LookupLoyaltyAsync());
-        ConnectScaleCommand = new RelayCommand(async _ => await ConnectScaleAsync());
-        CaptureWeightCommand = new RelayCommand(async _ => CaptureWeightFromScale());
+        ApplyDiscountCommand = new AsyncRelayCommand(async _ => await ShowDiscountDialogAsync());
+        PayCommand = new AsyncRelayCommand(async _ => await ProcessPaymentAsync());
+        QuickAmountCommand = new RelayCommand(amount =>
+        {
+            if (amount is decimal d) TenderedAmount = d;
+            else if (amount is string s && s == "Exact") TenderedAmount = GrandTotal;
+        });
+        SuspendCommand = new AsyncRelayCommand(async _ => await SuspendTransactionAsync());
+        RecallCommand = new AsyncRelayCommand(async _ => await RecallTransactionAsync());
+        ReprintCommand = new AsyncRelayCommand(async _ => await ReprintLastReceiptAsync());
+        ApplyCouponCommand = new AsyncRelayCommand(async _ => await ApplyCouponAsync());
+        LookupLoyaltyCommand = new AsyncRelayCommand(async _ => await LookupLoyaltyAsync());
+        ConnectScaleCommand = new AsyncRelayCommand(async _ => await ConnectScaleAsync());
+        CaptureWeightCommand = new AsyncRelayCommand(async _ => CaptureWeightFromScale());
         TareScaleCommand = new RelayCommand(_ => _scale.SendTareCommand());
 
         _scale.WeightReceived += (_, weight) =>

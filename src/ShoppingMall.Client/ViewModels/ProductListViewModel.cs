@@ -17,7 +17,7 @@ public class ProductListViewModel : BaseViewModel
         set
         {
             SetProperty(ref _searchText, value);
-            _ = SearchAsync();
+            FireAndForget(SearchAsync);
         }
     }
 
@@ -41,8 +41,8 @@ public class ProductListViewModel : BaseViewModel
     public ProductListViewModel(ApiClient api)
     {
         _api = api;
-        RefreshCommand = new RelayCommand(async _ => await LoadAsync());
-        SearchCommand = new RelayCommand(async _ => await SearchAsync());
+        RefreshCommand = new AsyncRelayCommand(async _ => await LoadAsync());
+        SearchCommand = new AsyncRelayCommand(async _ => await SearchAsync());
     }
 
     public async Task LoadAsync()
@@ -53,6 +53,10 @@ public class ProductListViewModel : BaseViewModel
             var products = await _api.SearchProductsAsync("");
             Products.Clear();
             foreach (var p in products) Products.Add(p);
+        }
+        catch
+        {
+            // silently ignore — not yet authenticated
         }
         finally
         {

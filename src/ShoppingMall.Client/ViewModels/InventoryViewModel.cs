@@ -16,7 +16,7 @@ public class InventoryViewModel : BaseViewModel
         set
         {
             SetProperty(ref _searchText, value);
-            _ = SearchAsync();
+            FireAndForget(SearchAsync);
         }
     }
 
@@ -42,7 +42,7 @@ public class InventoryViewModel : BaseViewModel
     {
         _api = api;
         _config = config;
-        RefreshCommand = new RelayCommand(async _ => await LoadStockAsync());
+        RefreshCommand = new AsyncRelayCommand(async _ => await LoadStockAsync());
     }
 
     public async Task LoadStockAsync()

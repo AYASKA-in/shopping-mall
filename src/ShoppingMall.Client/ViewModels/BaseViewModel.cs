@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 namespace ShoppingMall.Client.ViewModels;
@@ -17,6 +18,12 @@ public abstract class BaseViewModel : INotifyPropertyChanged
         field = value;
         OnPropertyChanged(propertyName);
         return true;
+    }
+
+    protected async void FireAndForget(Func<Task> action)
+    {
+        try { await action(); }
+        catch { }
     }
 }
 
@@ -39,4 +46,45 @@ public class RelayCommand : ICommand
 
     public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
     public void Execute(object? parameter) => _execute(parameter);
+}
+
+public class AsyncRelayCommand : ICommand
+{
+    private readonly Func<object?, Task> _execute;
+    private readonly Func<object?, bool>? _canExecute;
+    private bool _isExecuting;
+
+    public AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+
+    public bool CanExecute(object? parameter) => !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
+    public async void Execute(object? parameter)
+    {
+        if (_isExecuting) return;
+        _isExecuting = true;
+        CommandManager.InvalidateRequerySuggested();
+        try
+        {
+            await _execute(parameter);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"An unexpected error occurred:\n{ex.Message}",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isExecuting = false;
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
 }

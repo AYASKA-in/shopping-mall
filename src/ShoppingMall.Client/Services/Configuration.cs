@@ -32,7 +32,7 @@ public class AppConfiguration
 
 public class ClientConfig
 {
-    public string ServerUrl { get; set; } = "http://localhost:5000";
+    public string ServerUrl { get; set; } = "http://localhost:5194";
     public Guid TerminalId { get; set; }
     public Guid StoreId { get; set; }
     public string TerminalName { get; set; } = "POS-1";

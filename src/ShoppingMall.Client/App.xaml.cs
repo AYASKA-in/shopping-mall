@@ -54,6 +54,25 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        DispatcherUnhandledException += (_, args) =>
+        {
+            MessageBox.Show($"An unexpected error occurred:\n{args.Exception.Message}",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            MessageBox.Show($"A critical error occurred:\n{ex?.Message ?? "Unknown error"}",
+                "Critical Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            args.SetObserved();
+        };
+
         var config = Services.GetRequiredService<AppConfiguration>();
         var cfg = config.Load();
 
