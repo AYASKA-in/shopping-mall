@@ -19,7 +19,7 @@ public static class UpiEndpoints
             return Results.Ok(new { upiId, intent, storeName = store?.Name });
         });
 
-        group.MapPost("/qr/dynamic", async (DynamicQrRequest request, UpiPaymentService upi) =>
+        group.MapPost("/qr/dynamic", (DynamicQrRequest request, UpiPaymentService upi) =>
         {
             var upiId = app.Configuration.GetValue<string>("Upi:Id") ?? "store@paytm";
             var intent = upi.GenerateDynamicQrIntent(upiId, request.StoreName, request.Amount, request.TransactionRef, request.Note);
@@ -34,7 +34,7 @@ public static class UpiEndpoints
                 : Results.Ok(order);
         });
 
-        group.MapPost("/verify", async (VerifyPaymentRequest request, UpiPaymentService upi) =>
+        group.MapPost("/verify", (VerifyPaymentRequest request, UpiPaymentService upi) =>
         {
             var isValid = upi.VerifyRazorpayPayment(request.RazorpayOrderId, request.RazorpayPaymentId, request.RazorpaySignature);
             return Results.Ok(new { isValid });

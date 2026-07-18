@@ -36,7 +36,7 @@ public class ExceptionHandlingMiddleware
         {
             _logger.LogError(ex, "Unhandled exception");
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            await WriteErrorAsync(context, "An internal error occurred");
+            await WriteErrorAsync(context, ex.Message);
         }
     }
 

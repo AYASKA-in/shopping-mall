@@ -29,6 +29,7 @@ public class PosViewModel : BaseViewModel
     public decimal TaxTotal => _cart.TaxTotal;
     public decimal GrandTotal => _cart.GrandTotal;
     public decimal TotalAmount => GrandTotal;
+    public bool HasItems => _cart.HasItems;
 
     private string _barcodeInput = "";
     public string BarcodeInput
@@ -523,6 +524,7 @@ public class PosViewModel : BaseViewModel
             var lines = System.Text.Json.JsonSerializer.Deserialize<List<CartLineItem>>(first.BasketData);
             if (lines != null)
             {
+                await _api.HttpPostAsync<object>($"/api/pos/transactions/{first.Id}/recall", new { });
                 _cart.Clear();
                 foreach (var line in lines)
                     _cart.Lines.Add(line);

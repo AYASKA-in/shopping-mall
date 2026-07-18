@@ -24,8 +24,10 @@ public static class AuthEndpoints
             });
         });
 
-        group.MapPost("/logout", async (Guid sessionId, AuthService auth) =>
+        group.MapPost("/logout", async (HttpContext ctx, AuthService auth) =>
         {
+            var sessionId = await ctx.Request.ReadFromJsonAsync<Guid>();
+            if (sessionId == Guid.Empty) return Results.BadRequest("Invalid session ID");
             await auth.LogoutAsync(sessionId);
             return Results.Ok();
         });

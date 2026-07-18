@@ -87,6 +87,16 @@ public static class PosEndpoints
             var suspended = await repo.FindAsync(s => s.StoreId == storeId && !s.IsRecalled);
             return Results.Ok(suspended.OrderByDescending(s => s.SuspendedAt).Take(20));
         });
+
+        group.MapPost("/transactions/{id}/recall", async (Guid id, IRepository<SuspendedTransaction> repo) =>
+        {
+            var all = await repo.FindAsync(s => s.Id == id);
+            var suspended = all.FirstOrDefault();
+            if (suspended is null) return Results.NotFound();
+            suspended.IsRecalled = true;
+            await repo.UpdateAsync(suspended);
+            return Results.Ok(suspended);
+        });
     }
 }
 

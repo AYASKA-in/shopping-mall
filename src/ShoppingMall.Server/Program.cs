@@ -9,6 +9,7 @@ using ShoppingMall.Server.Middleware;
 using ShoppingMall.Server.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseWindowsService(options =>
